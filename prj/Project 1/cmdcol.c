@@ -1,4 +1,4 @@
-#include "command.h"
+#include "commando.h"
 
 void cmdcol_print(cmdcol_t *col);
 void cmdcol_add(cmdcol_t *col, cmd_t *cmd);
