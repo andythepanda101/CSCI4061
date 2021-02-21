@@ -54,6 +54,7 @@ void cmdcol_print(cmdcol_t *col){
 void cmdcol_add(cmdcol_t *col, cmd_t *cmd){
   if(col->size + 1 > MAX_CMDS){
     printf("ERROR: adding another cmd would exceed MAX_CMDS");
+    return;
   }
   col->cmd[col->size] = cmd;
   col->size += 1;
@@ -70,6 +71,6 @@ void cmdcol_update_state(cmdcol_t *col, int nohang){
 
 void cmdcol_freeall(cmdcol_t *col){
   for(int i = 0; i < col->size; i++){
-    free(col->cmd[i]);
+    cmd_free(col->cmd[i]);
   }
 }
