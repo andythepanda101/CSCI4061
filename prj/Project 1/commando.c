@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
   setvbuf(stdout, NULL, _IONBF, 0); // Turn off output buffering
   char *input = NULL;
 
-  //TODO: make and initialize empty cmdcol
+  cmdcol_t *cmdCol;
 
   while(1 {
     printf("@>");
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
       } else if (strcmp(tokens[0], "exit")) {
         break();
       } else if (strcmp(tokens[0], "list")) {
-        
+        cmdcol_print(cmdCol);
       } else if (strcmp(tokens[0], "pause")) {
         pause_for(tokens[1], tokens[2]);
       } else if (strcmp(tokens[0], "output-for")) {
@@ -53,10 +53,15 @@ int main(int argc, char *argv[]){
       } else if (strcmp(tokens[0], "wait-all")) {
         
       } else {
-
+        cmd_t *newCmd;
+        newCmd = cmd_new(tokens);
+        cmd_start(newCmd);
+        cmdCol_add(cmdCol, newCmd);
       }
+      cmdcol_update_state();
     }
   }
+  cmdcol_freeall(cmdCol);
   return 0;
 }
 
