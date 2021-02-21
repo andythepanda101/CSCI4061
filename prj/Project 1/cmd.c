@@ -115,11 +115,12 @@ void cmd_update_state(cmd_t *cmd, int nohang) {
         waitpid(cmd->pid, &status, nohang);
 
         if(WIFEXITED(status)){
-            cmd->status = WEXITSTATUS(status);
-            snprintf(cmd->str_status,STATUS_LEN,"EXIT(%d)",WEXITSTATUS(status));
+            int retcode = WEXITSTATUS(status);
+            cmd->status = retcode;
+            snprintf(cmd->str_status,STATUS_LEN,"EXIT(%d)",cmd->status);
             cmd->finished = 1;
             cmd_fetch_output(cmd);
-            printf("@!!! %s[#%d]: EXIT(%d)\n", cmd->name,(int) cmd->pid, cmd->status);
+            printf("@!!! %s[#%d]: %s\n", cmd->name,(int) cmd->pid, cmd->str_status);
         }
     }
 }
