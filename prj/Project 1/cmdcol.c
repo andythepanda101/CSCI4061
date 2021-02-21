@@ -53,12 +53,10 @@ void cmdcol_print(cmdcol_t *col){
 // MAX_CMDS, the maximum number commands supported.
 void cmdcol_add(cmdcol_t *col, cmd_t *cmd){
   if(col->size + 1 > MAX_CMDS){
-    printf("ERROR: adding another cmd would exceed MAX_CMDS\n");
-    free(cmd);
-  } else {
-    col->cmd[col->size] = cmd;
-    col->size += 1;
+    printf("ERROR: adding another cmd would exceed MAX_CMDS");
   }
+  col->cmd[col->size] = cmd;
+  col->size += 1;
 }
 
 // Update each cmd in col by calling cmd_update_state() which is also
@@ -72,6 +70,6 @@ void cmdcol_update_state(cmdcol_t *col, int nohang){
 
 void cmdcol_freeall(cmdcol_t *col){
   for(int i = 0; i < col->size; i++){
-    cmd_free(col->cmd[i]);
+    free(col->cmd[i]);
   }
 }

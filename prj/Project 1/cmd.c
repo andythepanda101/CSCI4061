@@ -23,14 +23,14 @@ typedef struct {
 // fields to obvious default values such as -1s, and NULLs.
 cmd_t *cmd_new(char *argv[]) {
     cmd_t *newCmd = malloc(sizeof(cmd_t));
+    strcpy(newCmd->name, argv[0]);
     int i = 0;
-    while(argv[i] != NULL && *argv[i] != '\0') {
+    while(argv[i] != NULL) {
         newCmd->argv[i] = strdup(argv[i]);
         i += 1;
     }
     newCmd->argv[i] = NULL;
     newCmd->finished = 0;
-    strcpy(newCmd->name, argv[0]);
     snprintf(newCmd->str_status,STATUS_LEN,"%s","INIT");
     newCmd->pid = -1;
     newCmd->out_pipe[0] = -1;
@@ -48,6 +48,7 @@ void cmd_free(cmd_t *cmd) {
     int i = 0;
     while(cmd->argv[i] != NULL) {
         free(cmd->argv[i]);
+        cmd->argv[i] = NULL;
         i += 1;
     }
     if(cmd->output != NULL) {
