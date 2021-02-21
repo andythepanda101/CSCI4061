@@ -140,9 +140,9 @@ char *read_all(int fd, int *nread) {
     char *buf = malloc(max_size*sizeof(char));
 
     while(1) {
-        bytesRead = read(fd, &buf[cur_pos], max_size - cur_pos);
+        bytesRead = read(fd, &buf[cur_pos], sizeof(char)*(max_size - cur_pos));
         cur_pos += bytesRead;
-        if(bytesRead < max_size - cur_pos) {
+        if(bytesRead == 0) {
             break;
         }
         if(max_size == cur_pos) {
