@@ -22,9 +22,9 @@ This will be a long if/else chain of statements.
 */
 
 int main(int argc, char *argv[]){
-  int echo = 0;
+  int echo = getenv("COMMANDO_ECHO") != NULL;
   if(argc > 1) {
-    echo = !strcmp("--echo", argv[1]) || getenv("COMMANDO_ECHO");
+    echo |= !strcmp("--echo", argv[1]);
   }
   setvbuf(stdout, NULL, _IONBF, 0); // Turn off output buffering
   
