@@ -26,14 +26,17 @@ This will be a long if/else chain of statements.
 */
 
 int main(int argc, char *argv[]){
-  int echo = strcmp("--echo", argv[1]) || getenv("COMMANDO_ECHO");
+  int echo = 0;
+  if(argc > 1) {
+    echo = strcmp("--echo", argv[2]) || getenv("COMMANDO_ECHO");
+  }
   setvbuf(stdout, NULL, _IONBF, 0); // Turn off output buffering
   char *input = NULL;
 
   cmdcol_t *cmdCol = malloc(sizeof(cmdcol_t));
 
   while(1) {
-    printf("@>");
+    printf("@> ");
     fgets(input, MAX_LINE, stdin);
 
     if(input == NULL) {

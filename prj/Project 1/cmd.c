@@ -24,12 +24,12 @@ typedef struct {
 cmd_t *cmd_new(char *argv[]) {
     cmd_t *newCmd = malloc(sizeof(cmd_t));
     strcpy(newCmd->name, argv[0]);
-    int i = -1;
-    while(argv[++i] != NULL) {
-        newCmd->argv[i] = (char*)malloc(sizeof(char)*NAME_MAX);
-        strncpy(newCmd->argv[i], argv[i],NAME_MAX);
+    int i = 0;
+    while(argv[i] != NULL) {
+        newCmd->argv[i] = strdup(argv[i]);
+        i += 1;
     }
-    newCmd->argv[i + 1] = NULL;
+    newCmd->argv[i] = NULL;
     newCmd->finished = 0;
     snprintf(newCmd->str_status,STATUS_LEN,"%s","INIT");
     newCmd->pid = -1;
@@ -45,10 +45,11 @@ cmd_t *cmd_new(char *argv[]) {
 // array. Also deallocats the output buffer if it is not
 // NULL. Finally, deallocates cmd itself.
 void cmd_free(cmd_t *cmd) {
-    int i = -1;
-    while(cmd->argv[++i] != NULL) {
+    int i = 0;
+    while(cmd->argv[i] != NULL) {
         free(cmd->argv[i]);
         cmd->argv[i] = NULL;
+        i += 1;
     }
     if(cmd->output != NULL) {
         free(cmd->output);
@@ -134,16 +135,13 @@ void cmd_update_state(cmd_t *cmd, int nohang) {
 // string is null-terminated. Does not call close() on the fd as this
 // is done elsewhere.
 char *read_all(int fd, int *nread) {
-    int max_size = 1; 
-    int cur_pos = 0; 
-    int bytesRead = 0;
+    int max_size = 1, cur_pos = 0, bytesRead = 0;
     char *buf = malloc(max_size*sizeof(char));
 
     while(1) {
-        bytesRead = read(fd, &buf[cur_pos], max_size - cur_pos - 1);
-        cur_pos += 1;
-        nread += bytesRead;
-        if(!bytesRead) {
+        bytesRead = read(fd, &buf[cur_pos], max_size - cur_pos);
+        cur_pos += bytesRead;
+        if(bytesRead < max_size - cur_pos) {
             break;
         }
         if(max_size == cur_pos) {
@@ -157,6 +155,8 @@ char *read_all(int fd, int *nread) {
             buf = newbuf;
         }
     }
+    buf[cur_pos] = '\0';
+    *nread = cur_pos + 1;
     return buf;
 }
 
@@ -191,23 +191,3 @@ void cmd_print_output(cmd_t *cmd) {
     }
     printf("%s\n",(char *) cmd->output);
 }
-/*
-int main(void) {
-    printf("Started\n");
-    cmd_t *myCmd;
-    char *argv[4] = {"ls", "-l", NULL, NULL};
-    myCmd = cmd_new(argv);
-    printf("cmd Created\n");
-    cmd_start(myCmd);
-    printf("cmd Started\n");
-    while(myCmd->finished != 1) {
-        cmd_update_state(myCmd, NOBLOCK);
-        printf("cmd Updated: %d\n", myCmd->status);
-    }
-    printf("cmd ended \n");
-    cmd_fetch_output(myCmd);
-    printf("output fetched \n");
-    cmd_print_output(myCmd);
-    cmd_free(myCmd);
-    return 0;
-}*/

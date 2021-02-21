@@ -1,9 +1,0 @@
-BASH> unset COMMANDO_ECHO
-BASH> printf "help\nlist\nexit\n" > test-results/cmds.tmp
-BASH> ./commando < test-results/cmds.tmp && printf "\n\n"
-bash: line 3: 21056 Segmentation fault      ./commando < test-results/cmds.tmp
-BASH> ./commando --echo < test-results/cmds.tmp && printf "\n\n"
-@>bash: line 4: 21057 Segmentation fault      ./commando --echo < test-results/cmds.tmp
-BASH> export COMMANDO_ECHO=1
-BASH> ./commando < test-results/cmds.tmp && printf "\n\n"
-bash: line 6: 21058 Segmentation fault      ./commando < test-results/cmds.tmp
