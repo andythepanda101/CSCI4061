@@ -83,6 +83,7 @@ void cmd_start(cmd_t *cmd) {
         close(out_pipe[PREAD]);
         dup2(out_pipe[PWRITE], STDOUT_FILENO);
         execvp(cmd->name, cmd->argv);
+        exit(0);
     }
     cmd->pid = child_pid;
     cmd->out_pipe[PWRITE] = out_pipe[PWRITE];
@@ -149,15 +150,15 @@ char *read_all(int fd, int *nread) {
         if(max_size == cur_pos) {
             max_size *= 2;
             char *newbuf = realloc(buf, max_size*sizeof(char));
-            if(new_buf == NULL){                         // check that re-allocation succeeded
+            if(newbuf == NULL){                         // check that re-allocation succeeded
                 printf("ERROR: reallocation failed\n");    // if not...
                 free(buf);                                 // de-allocate current buffer
                 exit(1);                                   // bail out
             }
-            buf = new_buf;
+            buf = newbuf;
         }
     }
-    return *buf;
+    return buf;
 }
 
 // If cmd->finished is zero, prints an error message with the format
@@ -171,7 +172,8 @@ char *read_all(int fd, int *nread) {
 // all input.
 void cmd_fetch_output(cmd_t *cmd) {
     if(cmd->finished) {
-        
+        cmd->output = read_all(cmd->out_pipe[PREAD], &cmd->output_size);
+        close(cmd->out_pipe[PREAD]);
         return;
     }
     printf("%s[#%d] not finished yet", cmd->name, cmd->pid);
@@ -184,14 +186,24 @@ void cmd_fetch_output(cmd_t *cmd) {
 //
 // if output is NULL. The message includes the command name and PID.
 void cmd_print_output(cmd_t *cmd) {
-
+    if(cmd->output == NULL) {
+        printf("%s[#%d] : output not ready", cmd->name, cmd->pid);
+        return;
+    }
+    printf("%s\n",(char *) cmd->output);
 }
 
 int main(void) {
-    cmd_t myCmd;
+    printf("Started");
+    cmd_t *myCmd;
     char *argv[4] = {"ls", "-l", NULL, NULL};
-    myCmd = *cmd_new(argv);
-    cmd_free(&myCmd);
-    cmd_start(&myCmd);
-    cmd_update_state(&myCmd, 0);
+    myCmd = cmd_new(argv);
+    printf("cmd Created");
+    cmd_start(myCmd);
+    printf("cmd Started");
+    cmd_update_state(myCmd, DOBLOCK);
+    printf("cmd Updated");
+    cmd_fetch_output(myCmd);
+    cmd_print_output(myCmd);
+    cmd_free(myCmd);
 }
