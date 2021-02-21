@@ -1,0 +1,35 @@
+(TEST 15) cmdcol_add_1
+COMMENTS:
+
+program: ./test_cmd cmdcol_add_1
+Failure messages:
+- FAILURE(13): Valgrind detected errors
+
+--- Valgrind Log from: test-results/raw/functions-15-valgrd.tmp ---
+==801490== Memcheck, a memory error detector
+==801490== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==801490== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==801490== Command: ./test_cmd cmdcol_add_1
+==801490== Parent PID: 801489
+==801490== 
+==801490== 
+==801490== HEAP SUMMARY:
+==801490==     in use at exit: 60 bytes in 5 blocks
+==801490==   total heap usage: 7 allocs, 2 frees, 4,764 bytes allocated
+==801490== 
+==801490== 60 bytes in 5 blocks are definitely lost in loss record 1 of 1
+==801490==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==801490==    by 0x495150E: strdup (strdup.c:42)
+==801490==    by 0x10B27D: cmd_new (cmd.c:29)
+==801490==    by 0x10A612: main (test_cmd.c:351)
+==801490== 
+==801490== LEAK SUMMARY:
+==801490==    definitely lost: 60 bytes in 5 blocks
+==801490==    indirectly lost: 0 bytes in 0 blocks
+==801490==      possibly lost: 0 bytes in 0 blocks
+==801490==    still reachable: 0 bytes in 0 blocks
+==801490==         suppressed: 0 bytes in 0 blocks
+==801490== 
+==801490== For lists of detected and suppressed errors, rerun with: -s
+==801490== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+

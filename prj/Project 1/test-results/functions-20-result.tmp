@@ -1,0 +1,117 @@
+(TEST 20) cmdcol_print_2
+COMMENTS:
+
+program: ./test_cmd cmdcol_print_2
+Failure messages:
+- FAILURE(13): Valgrind detected errors
+- FAILURE: Output Mismatch at lines marked
+
+--- Side by Side Differences ---
+- Expect output in: test-results/raw/functions-20-expect.tmp
+- Actual output in: test-results/raw/functions-20-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+==== EXPECT ====                                                                          ==== ACTUAL ====                                                                       
+{                                                                                         {
+    // Adds to a cmd collection, runs commands, and                                           // Adds to a cmd collection, runs commands, and
+    // the prints showing most commands in the RUN                                            // the prints showing most commands in the RUN
+    // state. Then waits for them to complete via                                             // state. Then waits for them to complete via
+    // cmdcol_update_state(). Calls cmdcol_print() to                                         // cmdcol_update_state(). Calls cmdcol_print() to
+    // show most commands in EXIT(..) state.                                                  // show most commands in EXIT(..) state.
+    char *children[][5] = {                                                                   char *children[][5] = {
+      {"cat","test_data/quote.txt",NULL},                                                       {"cat","test_data/quote.txt",NULL},    
+      {"ls","-a","test_data/stuff",NULL},                                                       {"ls","-a","test_data/stuff",NULL},
+      {"grep","-i", "flurbo ","test_data/gettysburg.txt",NULL},                                 {"grep","-i", "flurbo ","test_data/gettysburg.txt",NULL},
+      {"ls","-a","-F","test_data/stuff",NULL},                                                  {"ls","-a","-F","test_data/stuff",NULL},
+      {"gcc","-o","test_data/print_args",                                                       {"gcc","-o","test_data/print_args",
+                   "test_data/print_args.c",NULL},                                                           "test_data/print_args.c",NULL},
+      {NULL},                                                                                   {NULL},
+    };                                                                                        };
+    cmdcol_t cmdcol_actual = {};                                                              cmdcol_t cmdcol_actual = {};
+    cmdcol_t *cmdcol = &cmdcol_actual;                                                        cmdcol_t *cmdcol = &cmdcol_actual;
+    for(int i=0; children[i][0] != NULL; i++){                                                for(int i=0; children[i][0] != NULL; i++){
+      cmd_t *cmd = cmd_new(children[i]);                                                        cmd_t *cmd = cmd_new(children[i]);
+      cmdcol_add(cmdcol, cmd);                                                                  cmdcol_add(cmdcol, cmd);
+      cmd_start(cmd);                                                                           cmd_start(cmd);
+    }                                                                                         }
+    printf("Before cmdcol_update_state()\n");                                                 printf("Before cmdcol_update_state()\n");
+    cmdcol_print(cmdcol);       // RUN                                                        cmdcol_print(cmdcol);       // RUN
+
+    cmdcol_update_state(cmdcol, DOBLOCK);                                                     cmdcol_update_state(cmdcol, DOBLOCK);
+
+    printf("\n");                                                                             printf("\n");
+    printf("After cmdcol_update_state()\n");                                                  printf("After cmdcol_update_state()\n");
+    cmdcol_print(cmdcol);       // EXIT(..)                                                   cmdcol_print(cmdcol);       // EXIT(..)
+    cmdcol_freeall(cmdcol);                                                                   cmdcol_freeall(cmdcol);
+}                                                                                         }
+Before cmdcol_update_state()                                                              Before cmdcol_update_state()
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                                               JOB  #PID      STAT   STR_STAT OUTB COMMAND
+0    %0          -1        RUN   -1 cat test_data/quote.txt                               0    %0          -1        RUN   -1 cat test_data/quote.txt
+1    %1          -1        RUN   -1 ls -a test_data/stuff                                 1    %1          -1        RUN   -1 ls -a test_data/stuff
+2    %2          -1        RUN   -1 grep -i flurbo  test_data/gettysburg.txt              2    %2          -1        RUN   -1 grep -i flurbo  test_data/gettysburg.txt
+3    %3          -1        RUN   -1 ls -a -F test_data/stuff                              3    %3          -1        RUN   -1 ls -a -F test_data/stuff
+4    %4          -1        RUN   -1 gcc -o test_data/print_args test_data/print_args.c    4    %4          -1        RUN   -1 gcc -o test_data/print_args test_data/print_args.c
+
+After cmdcol_update_state()                                                               After cmdcol_update_state()
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                                               JOB  #PID      STAT   STR_STAT OUTB COMMAND
+0    %0           0    EXIT(0)  125 cat test_data/quote.txt                               0    %0           0    EXIT(0)  125 cat test_data/quote.txt
+1    %1           0    EXIT(0)   52 ls -a test_data/stuff                               | 1    %1           0    EXIT(0)  189 ls -a test_data/stuff
+2    %2           1    EXIT(1)    0 grep -i flurbo  test_data/gettysburg.txt              2    %2           1    EXIT(1)    0 grep -i flurbo  test_data/gettysburg.txt
+3    %3           0    EXIT(0)   55 ls -a -F test_data/stuff                            | 3    %3           0    EXIT(0)  192 ls -a -F test_data/stuff
+4    %4           0    EXIT(0)    0 gcc -o test_data/print_args test_data/print_args.c    4    %4           0    EXIT(0)    0 gcc -o test_data/print_args test_data/print_args.c
+ALERTS:                                                                                   ALERTS:
+@!!! cat[%0]: EXIT(0)                                                                     @!!! cat[%0]: EXIT(0)
+@!!! ls[%1]: EXIT(0)                                                                      @!!! ls[%1]: EXIT(0)
+@!!! grep[%2]: EXIT(1)                                                                    @!!! grep[%2]: EXIT(1)
+@!!! ls[%3]: EXIT(0)                                                                      @!!! ls[%3]: EXIT(0)
+@!!! gcc[%4]: EXIT(0)                                                                     @!!! gcc[%4]: EXIT(0)
+                                                                                        (
+--- Line Differences ---
+EXPECT:  44) 1    %1           0    EXIT(0)   52 ls -a test_data/stuff 
+ACTUAL:  44) 1    %1           0    EXIT(0)  189 ls -a test_data/stuff
+EXPECT:  46) 3    %3           0    EXIT(0)   55 ls -a -F test_data/stuff 
+ACTUAL:  46) 3    %3           0    EXIT(0)  192 ls -a -F test_data/stuff
+
+--- Valgrind Log from: test-results/raw/functions-20-valgrd.tmp ---
+==801703== Memcheck, a memory error detector
+==801703== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==801703== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==801703== Command: ./test_cmd cmdcol_print_2
+==801703== Parent PID: 801702
+==801703== 
+==801703== 
+==801703== HEAP SUMMARY:
+==801703==     in use at exit: 805 bytes in 22 blocks
+==801703==   total heap usage: 50 allocs, 28 frees, 13,202 bytes allocated
+==801703== 
+==801703== 2 bytes in 2 blocks are definitely lost in loss record 1 of 3
+==801703==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==801703==    by 0x10B652: read_all (cmd.c:140)
+==801703==    by 0x10B744: cmd_fetch_output (cmd.c:175)
+==801703==    by 0x10B5DA: cmd_update_state (cmd.c:121)
+==801703==    by 0x10B9EA: cmdcol_update_state (cmdcol.c:70)
+==801703==    by 0x10B1AE: main (test_cmd.c:487)
+==801703== 
+==801703== 163 bytes in 17 blocks are definitely lost in loss record 2 of 3
+==801703==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==801703==    by 0x495150E: strdup (strdup.c:42)
+==801703==    by 0x10B27D: cmd_new (cmd.c:29)
+==801703==    by 0x10B11D: main (test_cmd.c:480)
+==801703== 
+==801703== 640 bytes in 3 blocks are definitely lost in loss record 3 of 3
+==801703==    at 0x483DFAF: realloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==801703==    by 0x10B6AD: read_all (cmd.c:150)
+==801703==    by 0x10B744: cmd_fetch_output (cmd.c:175)
+==801703==    by 0x10B5DA: cmd_update_state (cmd.c:121)
+==801703==    by 0x10B9EA: cmdcol_update_state (cmdcol.c:70)
+==801703==    by 0x10B1AE: main (test_cmd.c:487)
+==801703== 
+==801703== LEAK SUMMARY:
+==801703==    definitely lost: 805 bytes in 22 blocks
+==801703==    indirectly lost: 0 bytes in 0 blocks
+==801703==      possibly lost: 0 bytes in 0 blocks
+==801703==    still reachable: 0 bytes in 0 blocks
+==801703==         suppressed: 0 bytes in 0 blocks
+==801703== 
+==801703== For lists of detected and suppressed errors, rerun with: -s
+==801703== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+

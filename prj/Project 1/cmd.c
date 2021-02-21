@@ -162,9 +162,9 @@ char *read_all(int fd, int *nread) {
 }
 
 // If cmd->finished is zero, prints an error message with the format
-// 
+//
 // ls[#12341] not finished yet
-// 
+//
 // Otherwise retrieves output from the cmd->out_pipe and fills
 // cmd->output setting cmd->output_size to number of bytes in
 // output. Makes use of read_all() to efficiently capture
@@ -181,7 +181,7 @@ void cmd_fetch_output(cmd_t *cmd) {
 
 // Prints the output of the cmd contained in the output field if it is
 // non-null. Prints the error message
-// 
+//
 // ls[#17251] : output not ready
 //
 // if output is NULL. The message includes the command name and PID.
