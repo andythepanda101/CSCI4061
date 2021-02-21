@@ -1,0 +1,123 @@
+(TEST 15) pause finishes single job
+COMMENTS:
+Pause should allow short jobs like 'cat' to finish
+
+
+program: ./commando --echo
+Failure messages:
+- FAILURE(139) due to Kill Signal from OS: likely a SEGFAULT occured
+- FAILURE: Valgrind reports reachable memory, may need to add free() or fclose()
+- FAILURE: Output Mismatch at lines marked
+
+--- Side by Side Differences ---
+- Expect output in: test-results/raw/commando-15-expect.tmp
+- Actual output in: test-results/raw/commando-15-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+==== EXPECT ====                                                       ==== ACTUAL ====                                                    
+@> cat test_data/quote.txt                                           | @>
+@> pause 500000000 0                                                 <
+@> list                                                              <
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                          <
+0    %0           0    EXIT(0)  125 cat test_data/quote.txt          <
+@> output-for 0                                                      <
+@<<< Output for cat[%0] (125 bytes):                                 <
+----------------------------------------                             <
+Object-oriented programming is an exceptionally bad idea which could <
+only have originated in California.                                  <
+                                                                     <
+-- Edsger Dijkstra                                                   <
+----------------------------------------                             <
+@> cat test_data/quote.txt                                           <
+@> pause 0 1                                                         <
+@> list                                                              <
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                          <
+0    %0           0    EXIT(0)  125 cat test_data/quote.txt          <
+1    %1           0    EXIT(0)  125 cat test_data/quote.txt          <
+@> output-for 1                                                      <
+@<<< Output for cat[%1] (125 bytes):                                 <
+----------------------------------------                             <
+Object-oriented programming is an exceptionally bad idea which could <
+only have originated in California.                                  <
+                                                                     <
+-- Edsger Dijkstra                                                   <
+----------------------------------------                             <
+@> exit                                                              <
+ALERTS:                                                                ALERTS:
+@!!! cat[%0]: EXIT(0)                                                <
+@!!! cat[%1]: EXIT(0)                                                <
+--- Line Differences ---
+EXPECT:   1) @> cat test_data/quote.txt
+EXPECT:   2) @> pause 500000000 0
+EXPECT:   3) @> list
+EXPECT:   4) JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:   5) 0    %0           0    EXIT(0)  125 cat test_data/quote.txt 
+EXPECT:   6) @> output-for 0
+EXPECT:   7) @<<< Output for cat[%0] (125 bytes):
+EXPECT:   8) ----------------------------------------
+EXPECT:   9) Object-oriented programming is an exceptionally bad idea which could
+EXPECT:  10) only have originated in California.
+EXPECT:  11) 
+EXPECT:  12) -- Edsger Dijkstra
+EXPECT:  13) ----------------------------------------
+EXPECT:  14) @> cat test_data/quote.txt
+EXPECT:  15) @> pause 0 1
+EXPECT:  16) @> list
+EXPECT:  17) JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:  18) 0    %0           0    EXIT(0)  125 cat test_data/quote.txt 
+EXPECT:  19) 1    %1           0    EXIT(0)  125 cat test_data/quote.txt 
+EXPECT:  20) @> output-for 1
+EXPECT:  21) @<<< Output for cat[%1] (125 bytes):
+EXPECT:  22) ----------------------------------------
+EXPECT:  23) Object-oriented programming is an exceptionally bad idea which could
+EXPECT:  24) only have originated in California.
+EXPECT:  25) 
+EXPECT:  26) -- Edsger Dijkstra
+EXPECT:  27) ----------------------------------------
+EXPECT:  28) @> exit
+ACTUAL:   1) @>
+EXPECT:  30) @!!! cat[%0]: EXIT(0)
+EXPECT:  31) @!!! cat[%1]: EXIT(0)
+
+--- Valgrind Log from: test-results/raw/commando-15-valgrd.tmp ---
+==21457== Memcheck, a memory error detector
+==21457== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==21457== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==21457== Command: ./commando --echo
+==21457== Parent PID: 21456
+==21457== 
+==21457== Invalid write of size 1
+==21457==    at 0x48DDA01: _IO_getline_info (iogetline.c:77)
+==21457==    by 0x48DC849: fgets (iofgets.c:53)
+==21457==    by 0x1095CC: main (commando.c:37)
+==21457==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==21457== 
+==21457== 
+==21457== Process terminating with default action of signal 11 (SIGSEGV)
+==21457==  Access not within mapped region at address 0x0
+==21457==    at 0x48DDA01: _IO_getline_info (iogetline.c:77)
+==21457==    by 0x48DC849: fgets (iofgets.c:53)
+==21457==    by 0x1095CC: main (commando.c:37)
+==21457==  If you believe this happened as a result of a stack
+==21457==  overflow in your program's main thread (unlikely but
+==21457==  possible), you can try to increase the size of the
+==21457==  main thread stack using the --main-stacksize= flag.
+==21457==  The main thread stack size used in this run was 8388608.
+==21457== 
+==21457== HEAP SUMMARY:
+==21457==     in use at exit: 8,200 bytes in 1 blocks
+==21457==   total heap usage: 1 allocs, 0 frees, 8,200 bytes allocated
+==21457== 
+==21457== 8,200 bytes in 1 blocks are still reachable in loss record 1 of 1
+==21457==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21457==    by 0x109599: main (commando.c:33)
+==21457== 
+==21457== LEAK SUMMARY:
+==21457==    definitely lost: 0 bytes in 0 blocks
+==21457==    indirectly lost: 0 bytes in 0 blocks
+==21457==      possibly lost: 0 bytes in 0 blocks
+==21457==    still reachable: 8,200 bytes in 1 blocks
+==21457==         suppressed: 0 bytes in 0 blocks
+==21457== 
+==21457== For lists of detected and suppressed errors, rerun with: -s
+==21457== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+

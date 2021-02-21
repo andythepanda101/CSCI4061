@@ -1,0 +1,23 @@
+{
+    // Tests the read_all() function to ensure that
+    // it properly accumulates all data from an
+    // arbitrary input FD including allocating memory
+    // for the data. 
+    int fd = open("./test_data/gettysburg.txt", O_RDONLY);
+    int bytes_read = -1;
+    char *actual_read = read_all(fd, &bytes_read);
+    int result = close(fd);
+    printf("result: %d\n", result);
+    printf("bytes_read: %d\n", bytes_read);
+    printf("actual_read:\n" );
+    printf("--------------------\n" );
+    printf("%s",actual_read);
+    printf("--------------------\n" );
+    free(actual_read);
+}
+result: 0
+bytes_read: -1
+actual_read:
+--------------------
+--------------------
+ALERTS:

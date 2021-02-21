@@ -1,0 +1,119 @@
+(TEST 2) Echoing via --echo and COMMANDO_ECHO
+COMMENTS:
+Checks 3 behaviors
+1. Normally commando does not echo entered commands
+2. When invoked with the '--echo' options, commands are echoed
+3. When the COMMANDO_ECHO environment variable is set, commands are
+   echoed
+Does so in a BASH terminal by feeding commands to commando from a file
+on standard input.
+
+
+
+program: bash -v
+Failure messages:
+- FAILURE(139) due to Kill Signal from OS: likely a SEGFAULT occured
+- FAILURE: Output Mismatch at lines marked
+
+--- Side by Side Differences ---
+- Expect output in: test-results/raw/commando-02-expect.tmp
+- Actual output in: test-results/raw/commando-02-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+==== EXPECT ====                                                                          ==== ACTUAL ====                                                                       
+BASH> unset COMMANDO_ECHO                                                                 BASH> unset COMMANDO_ECHO
+BASH> printf "help\nlist\nexit\n" > test-results/cmds.tmp                                 BASH> printf "help\nlist\nexit\n" > test-results/cmds.tmp
+BASH> ./commando < test-results/cmds.tmp && printf "\n\n"                                 BASH> ./commando < test-results/cmds.tmp && printf "\n\n"
+@> COMMANDO COMMANDS                                                                    | bash: line 3: 21056 Segmentation fault      ./commando < test-results/cmds.tmp
+help               : show this message                                                  <
+exit               : exit the program                                                   <
+list               : list all jobs that have been started giving information on each    <
+pause nanos secs   : pause for the given number of nanseconds and seconds               <
+output-for int     : print the output for given job number                              <
+output-all         : print output for all jobs                                          <
+wait-for int       : wait until the given job number finishes                           <
+wait-all           : wait for all jobs to finish                                        <
+command arg1 ...   : non-built-in is run as a job                                       <
+@> JOB  #PID      STAT   STR_STAT OUTB COMMAND                                          <
+@>                                                                                      <
+                                                                                        <
+BASH> ./commando --echo < test-results/cmds.tmp && printf "\n\n"                          BASH> ./commando --echo < test-results/cmds.tmp && printf "\n\n"
+@> help                                                                                 | @>bash: line 4: 21057 Segmentation fault      ./commando --echo < test-results/cmds.tmp
+COMMANDO COMMANDS                                                                       <
+help               : show this message                                                  <
+exit               : exit the program                                                   <
+list               : list all jobs that have been started giving information on each    <
+pause nanos secs   : pause for the given number of nanseconds and seconds               <
+output-for int     : print the output for given job number                              <
+output-all         : print output for all jobs                                          <
+wait-for int       : wait until the given job number finishes                           <
+wait-all           : wait for all jobs to finish                                        <
+command arg1 ...   : non-built-in is run as a job                                       <
+@> list                                                                                 <
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                                             <
+@> exit                                                                                 <
+                                                                                        <
+                                                                                        <
+BASH> export COMMANDO_ECHO=1                                                              BASH> export COMMANDO_ECHO=1
+BASH> ./commando < test-results/cmds.tmp && printf "\n\n"                                 BASH> ./commando < test-results/cmds.tmp && printf "\n\n"
+@> help                                                                                 | bash: line 6: 21058 Segmentation fault      ./commando < test-results/cmds.tmp
+COMMANDO COMMANDS                                                                       <
+help               : show this message                                                  <
+exit               : exit the program                                                   <
+list               : list all jobs that have been started giving information on each    <
+pause nanos secs   : pause for the given number of nanseconds and seconds               <
+output-for int     : print the output for given job number                              <
+output-all         : print output for all jobs                                          <
+wait-for int       : wait until the given job number finishes                           <
+wait-all           : wait for all jobs to finish                                        <
+command arg1 ...   : non-built-in is run as a job                                       <
+@> list                                                                                 <
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                                             <
+@> exit                                                                                 <
+--- Line Differences ---
+EXPECT:   4) @> COMMANDO COMMANDS
+EXPECT:   5) help               : show this message
+EXPECT:   6) exit               : exit the program
+EXPECT:   7) list               : list all jobs that have been started giving information on each
+EXPECT:   8) pause nanos secs   : pause for the given number of nanseconds and seconds
+EXPECT:   9) output-for int     : print the output for given job number
+EXPECT:  10) output-all         : print output for all jobs
+EXPECT:  11) wait-for int       : wait until the given job number finishes
+EXPECT:  12) wait-all           : wait for all jobs to finish
+EXPECT:  13) command arg1 ...   : non-built-in is run as a job
+EXPECT:  14) @> JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:  15) @> 
+EXPECT:  16) 
+ACTUAL:   4) bash: line 3: 21056 Segmentation fault      ./commando < test-results/cmds.tmp
+EXPECT:  18) @> help
+EXPECT:  19) COMMANDO COMMANDS
+EXPECT:  20) help               : show this message
+EXPECT:  21) exit               : exit the program
+EXPECT:  22) list               : list all jobs that have been started giving information on each
+EXPECT:  23) pause nanos secs   : pause for the given number of nanseconds and seconds
+EXPECT:  24) output-for int     : print the output for given job number
+EXPECT:  25) output-all         : print output for all jobs
+EXPECT:  26) wait-for int       : wait until the given job number finishes
+EXPECT:  27) wait-all           : wait for all jobs to finish
+EXPECT:  28) command arg1 ...   : non-built-in is run as a job
+EXPECT:  29) @> list
+EXPECT:  30) JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:  31) @> exit
+EXPECT:  32) 
+EXPECT:  33) 
+ACTUAL:   6) @>bash: line 4: 21057 Segmentation fault      ./commando --echo < test-results/cmds.tmp
+EXPECT:  36) @> help
+EXPECT:  37) COMMANDO COMMANDS
+EXPECT:  38) help               : show this message
+EXPECT:  39) exit               : exit the program
+EXPECT:  40) list               : list all jobs that have been started giving information on each
+EXPECT:  41) pause nanos secs   : pause for the given number of nanseconds and seconds
+EXPECT:  42) output-for int     : print the output for given job number
+EXPECT:  43) output-all         : print output for all jobs
+EXPECT:  44) wait-for int       : wait until the given job number finishes
+EXPECT:  45) wait-all           : wait for all jobs to finish
+EXPECT:  46) command arg1 ...   : non-built-in is run as a job
+EXPECT:  47) @> list
+EXPECT:  48) JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:  49) @> exit
+ACTUAL:   9) bash: line 6: 21058 Segmentation fault      ./commando < test-results/cmds.tmp
+

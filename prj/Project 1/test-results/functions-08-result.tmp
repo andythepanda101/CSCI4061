@@ -1,0 +1,125 @@
+(TEST 8) read_all_2
+COMMENTS:
+
+program: ./test_cmd read_all_2
+Failure messages:
+- FAILURE(13): Valgrind detected errors
+- FAILURE: Output Mismatch at lines marked
+
+--- Side by Side Differences ---
+- Expect output in: test-results/raw/functions-08-expect.tmp
+- Actual output in: test-results/raw/functions-08-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+==== EXPECT ====                                                         ==== ACTUAL ====                                                      
+{                                                                        {
+    // Tests the read_all() function to ensure that                          // Tests the read_all() function to ensure that
+    // it properly accumulates all data from an                              // it properly accumulates all data from an
+    // arbitrary input FD including allocating memory                        // arbitrary input FD including allocating memory
+    // for the data.                                                         // for the data. 
+    int fd = open("./test_data/gettysburg.txt", O_RDONLY);                   int fd = open("./test_data/gettysburg.txt", O_RDONLY);
+    int bytes_read = -1;                                                     int bytes_read = -1;
+    char *actual_read = read_all(fd, &bytes_read);                           char *actual_read = read_all(fd, &bytes_read);
+    int result = close(fd);                                                  int result = close(fd);
+    printf("result: %d\n", result);                                          printf("result: %d\n", result);
+    printf("bytes_read: %d\n", bytes_read);                                  printf("bytes_read: %d\n", bytes_read);
+    printf("actual_read:\n" );                                               printf("actual_read:\n" );
+    printf("--------------------\n" );                                       printf("--------------------\n" );
+    printf("%s",actual_read);                                                printf("%s",actual_read);
+    printf("--------------------\n" );                                       printf("--------------------\n" );
+    free(actual_read);                                                       free(actual_read);
+}                                                                        }
+result: 0                                                                result: 0
+bytes_read: 1511                                                       | bytes_read: -1
+actual_read:                                                             actual_read:
+--------------------                                                     --------------------
+Four score and seven years ago our fathers brought forth on this       <
+continent, a new nation, conceived in Liberty, and dedicated to the    <
+proposition that all men are created equal.                            <
+                                                                       <
+Now we are engaged in a great civil war, testing whether that nation,  <
+or any nation so conceived and so dedicated, can long endure. We are   <
+met on a great battle-field of that war. We have come to dedicate a    <
+portion of that field, as a final resting place for those who here     <
+gave their lives that that nation might live. It is altogether fitting <
+and proper that we should do this.                                     <
+                                                                       <
+But, in a larger sense, we can not dedicate -- we can not consecrate   <
+-- we can not hallow -- this ground. The brave men, living and dead,   <
+who struggled here, have consecrated it, far above our poor power to   <
+add or detract. The world will little note, nor long remember what we  <
+say here, but it can never forget what they did here. It is for us the <
+living, rather, to be dedicated here to the unfinished work which they <
+who fought here have thus far so nobly advanced. It is rather for us   <
+to be here dedicated to the great task remaining before us -- that     <
+from these honored dead we take increased devotion to that cause for   <
+which they gave the last full measure of devotion -- that we here      <
+highly resolve that these dead shall not have died in vain -- that     <
+this nation, under God, shall have a new birth of freedom -- and that  <
+government of the people, by the people, for the people, shall not     <
+perish from the earth.                                                 <
+                                                                       <
+Abraham Lincoln                                                        <
+November 19, 1863                                                      <
+--------------------                                                     --------------------
+ALERTS:                                                                  ALERTS:
+--- Line Differences ---
+EXPECT:  19) bytes_read: 1511
+ACTUAL:  19) bytes_read: -1
+EXPECT:  22) Four score and seven years ago our fathers brought forth on this
+EXPECT:  23) continent, a new nation, conceived in Liberty, and dedicated to the
+EXPECT:  24) proposition that all men are created equal.
+EXPECT:  25) 
+EXPECT:  26) Now we are engaged in a great civil war, testing whether that nation,
+EXPECT:  27) or any nation so conceived and so dedicated, can long endure. We are
+EXPECT:  28) met on a great battle-field of that war. We have come to dedicate a
+EXPECT:  29) portion of that field, as a final resting place for those who here
+EXPECT:  30) gave their lives that that nation might live. It is altogether fitting
+EXPECT:  31) and proper that we should do this.
+EXPECT:  32) 
+EXPECT:  33) But, in a larger sense, we can not dedicate -- we can not consecrate
+EXPECT:  34) -- we can not hallow -- this ground. The brave men, living and dead,
+EXPECT:  35) who struggled here, have consecrated it, far above our poor power to
+EXPECT:  36) add or detract. The world will little note, nor long remember what we
+EXPECT:  37) say here, but it can never forget what they did here. It is for us the
+EXPECT:  38) living, rather, to be dedicated here to the unfinished work which they
+EXPECT:  39) who fought here have thus far so nobly advanced. It is rather for us
+EXPECT:  40) to be here dedicated to the great task remaining before us -- that
+EXPECT:  41) from these honored dead we take increased devotion to that cause for
+EXPECT:  42) which they gave the last full measure of devotion -- that we here
+EXPECT:  43) highly resolve that these dead shall not have died in vain -- that
+EXPECT:  44) this nation, under God, shall have a new birth of freedom -- and that
+EXPECT:  45) government of the people, by the people, for the people, shall not
+EXPECT:  46) perish from the earth.
+EXPECT:  47) 
+EXPECT:  48) Abraham Lincoln
+EXPECT:  49) November 19, 1863
+
+--- Valgrind Log from: test-results/raw/functions-08-valgrd.tmp ---
+==20527== Memcheck, a memory error detector
+==20527== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==20527== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==20527== Command: ./test_cmd read_all_2
+==20527== Parent PID: 20526
+==20527== 
+==20527== Conditional jump or move depends on uninitialised value(s)
+==20527==    at 0x483EF49: strlen (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20527==    by 0x48D2E94: __vfprintf_internal (vfprintf-internal.c:1688)
+==20527==    by 0x48D4021: buffered_vfprintf (vfprintf-internal.c:2377)
+==20527==    by 0x48D0EA3: __vfprintf_internal (vfprintf-internal.c:1346)
+==20527==    by 0x48BBEBE: printf (printf.c:33)
+==20527==    by 0x109F12: main (test_cmd.c:210)
+==20527==  Uninitialised value was created by a heap allocation
+==20527==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20527==    by 0x10B645: read_all (cmd.c:140)
+==20527==    by 0x109E93: main (test_cmd.c:204)
+==20527== 
+==20527== 
+==20527== HEAP SUMMARY:
+==20527==     in use at exit: 0 bytes in 0 blocks
+==20527==   total heap usage: 1 allocs, 1 frees, 1 bytes allocated
+==20527== 
+==20527== All heap blocks were freed -- no leaks are possible
+==20527== 
+==20527== For lists of detected and suppressed errors, rerun with: -s
+==20527== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+

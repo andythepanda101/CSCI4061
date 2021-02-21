@@ -1,0 +1,20 @@
+{
+    // Tests whether cmd_print_output() correctly
+    // captures and prints a completed command's output.
+    char *argv[] = {
+      "grep",
+      "-i",
+      "the ",
+      "test_data/gettysburg.txt",
+      NULL
+    };
+    cmd_t *cmd = cmd_new(argv);
+    cmd_start(cmd);                // start running
+    cmd_update_state(cmd,DOBLOCK); // wait for completion
+                                   // should see an alert
+    cmd_print_output(cmd);
+    cmd_free(cmd);
+}
+grep[%0]: EXIT(0)
+
+ALERTS:

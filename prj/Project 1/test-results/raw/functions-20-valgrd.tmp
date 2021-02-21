@@ -1,0 +1,124 @@
+==20949== Memcheck, a memory error detector
+==20949== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==20949== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==20949== Command: ./test_cmd cmdcol_print_2
+==20949== Parent PID: 20948
+==20949== 
+==20952== Syscall param execve(argv) points to uninitialised byte(s)
+==20952==    at 0x493D2FB: execve (syscall-template.S:78)
+==20952==    by 0x493DCEE: __execvpe_common (execvpe.c:136)
+==20952==    by 0x493DCEE: execvpe (execvpe.c:190)
+==20952==    by 0x10B4CE: cmd_start (cmd.c:85)
+==20952==    by 0x10B14C: main (test_cmd.c:482)
+==20952==  Address 0x4a4c150 is 272 bytes inside a block of size 2,352 alloc'd
+==20952==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20952==    by 0x10B23B: cmd_new (cmd.c:25)
+==20952==    by 0x10B11D: main (test_cmd.c:480)
+==20952==  Uninitialised value was created by a heap allocation
+==20952==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20952==    by 0x10B23B: cmd_new (cmd.c:25)
+==20952==    by 0x10B11D: main (test_cmd.c:480)
+==20952== 
+==20953== Syscall param execve(argv) points to uninitialised byte(s)
+==20953==    at 0x493D2FB: execve (syscall-template.S:78)
+==20953==    by 0x493DCEE: __execvpe_common (execvpe.c:136)
+==20953==    by 0x493DCEE: execvpe (execvpe.c:190)
+==20953==    by 0x10B4CE: cmd_start (cmd.c:85)
+==20953==    by 0x10B14C: main (test_cmd.c:482)
+==20953==  Address 0x4a4cd48 is 280 bytes inside a block of size 2,352 alloc'd
+==20953==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20953==    by 0x10B23B: cmd_new (cmd.c:25)
+==20953==    by 0x10B11D: main (test_cmd.c:480)
+==20953==  Uninitialised value was created by a heap allocation
+==20953==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20953==    by 0x10B23B: cmd_new (cmd.c:25)
+==20953==    by 0x10B11D: main (test_cmd.c:480)
+==20953== 
+==20954== Syscall param execve(argv) points to uninitialised byte(s)
+==20954==    at 0x493D2FB: execve (syscall-template.S:78)
+==20954==    by 0x493DCEE: __execvpe_common (execvpe.c:136)
+==20954==    by 0x493DCEE: execvpe (execvpe.c:190)
+==20954==    by 0x10B4CE: cmd_start (cmd.c:85)
+==20954==    by 0x10B14C: main (test_cmd.c:482)
+==20954==  Address 0x4a4da80 is 288 bytes inside a block of size 2,352 alloc'd
+==20954==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20954==    by 0x10B23B: cmd_new (cmd.c:25)
+==20954==    by 0x10B11D: main (test_cmd.c:480)
+==20954==  Uninitialised value was created by a heap allocation
+==20954==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20954==    by 0x10B23B: cmd_new (cmd.c:25)
+==20954==    by 0x10B11D: main (test_cmd.c:480)
+==20954== 
+==20955== Syscall param execve(argv) points to uninitialised byte(s)
+==20955==    at 0x493D2FB: execve (syscall-template.S:78)
+==20955==    by 0x493DCEE: __execvpe_common (execvpe.c:136)
+==20955==    by 0x493DCEE: execvpe (execvpe.c:190)
+==20955==    by 0x10B4CE: cmd_start (cmd.c:85)
+==20955==    by 0x10B14C: main (test_cmd.c:482)
+==20955==  Address 0x4a4e8f0 is 288 bytes inside a block of size 2,352 alloc'd
+==20955==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20955==    by 0x10B23B: cmd_new (cmd.c:25)
+==20955==    by 0x10B11D: main (test_cmd.c:480)
+==20955==  Uninitialised value was created by a heap allocation
+==20955==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20955==    by 0x10B23B: cmd_new (cmd.c:25)
+==20955==    by 0x10B11D: main (test_cmd.c:480)
+==20955== 
+==20956== Syscall param execve(argv) points to uninitialised byte(s)
+==20956==    at 0x493D2FB: execve (syscall-template.S:78)
+==20956==    by 0x493DCEE: __execvpe_common (execvpe.c:136)
+==20956==    by 0x493DCEE: execvpe (execvpe.c:190)
+==20956==    by 0x10B4CE: cmd_start (cmd.c:85)
+==20956==    by 0x10B14C: main (test_cmd.c:482)
+==20956==  Address 0x4a4f760 is 288 bytes inside a block of size 2,352 alloc'd
+==20956==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20956==    by 0x10B23B: cmd_new (cmd.c:25)
+==20956==    by 0x10B11D: main (test_cmd.c:480)
+==20956==  Uninitialised value was created by a heap allocation
+==20956==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20956==    by 0x10B23B: cmd_new (cmd.c:25)
+==20956==    by 0x10B11D: main (test_cmd.c:480)
+==20956== 
+==20949== Conditional jump or move depends on uninitialised value(s)
+==20949==    at 0x10B8FA: cmdcol_print (cmdcol.c:43)
+==20949==    by 0x10B19A: main (test_cmd.c:485)
+==20949==  Uninitialised value was created by a heap allocation
+==20949==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20949==    by 0x10B23B: cmd_new (cmd.c:25)
+==20949==    by 0x10B11D: main (test_cmd.c:480)
+==20949== 
+==20949== Conditional jump or move depends on uninitialised value(s)
+==20949==    at 0x10B8FA: cmdcol_print (cmdcol.c:43)
+==20949==    by 0x10B1D3: main (test_cmd.c:491)
+==20949==  Uninitialised value was created by a heap allocation
+==20949==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20949==    by 0x10B23B: cmd_new (cmd.c:25)
+==20949==    by 0x10B11D: main (test_cmd.c:480)
+==20949== 
+==20949== 
+==20949== HEAP SUMMARY:
+==20949==     in use at exit: 4,340 bytes in 22 blocks
+==20949==   total heap usage: 27 allocs, 5 frees, 16,100 bytes allocated
+==20949== 
+==20949== 5 bytes in 5 blocks are definitely lost in loss record 1 of 2
+==20949==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20949==    by 0x10B645: read_all (cmd.c:140)
+==20949==    by 0x10B727: cmd_fetch_output (cmd.c:174)
+==20949==    by 0x10B5CD: cmd_update_state (cmd.c:119)
+==20949==    by 0x10B9C0: cmdcol_update_state (cmdcol.c:67)
+==20949==    by 0x10B1AE: main (test_cmd.c:487)
+==20949== 
+==20949== 4,335 bytes in 17 blocks are definitely lost in loss record 2 of 2
+==20949==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20949==    by 0x10B268: cmd_new (cmd.c:29)
+==20949==    by 0x10B11D: main (test_cmd.c:480)
+==20949== 
+==20949== LEAK SUMMARY:
+==20949==    definitely lost: 4,340 bytes in 22 blocks
+==20949==    indirectly lost: 0 bytes in 0 blocks
+==20949==      possibly lost: 0 bytes in 0 blocks
+==20949==    still reachable: 0 bytes in 0 blocks
+==20949==         suppressed: 0 bytes in 0 blocks
+==20949== 
+==20949== For lists of detected and suppressed errors, rerun with: -s
+==20949== ERROR SUMMARY: 12 errors from 4 contexts (suppressed: 0 from 0)

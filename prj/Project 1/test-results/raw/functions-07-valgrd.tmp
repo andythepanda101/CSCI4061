@@ -1,0 +1,27 @@
+==20493== Memcheck, a memory error detector
+==20493== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==20493== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==20493== Command: ./test_cmd read_all_1
+==20493== Parent PID: 20492
+==20493== 
+==20493== Conditional jump or move depends on uninitialised value(s)
+==20493==    at 0x483EF49: strlen (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20493==    by 0x48D2E94: __vfprintf_internal (vfprintf-internal.c:1688)
+==20493==    by 0x48D4021: buffered_vfprintf (vfprintf-internal.c:2377)
+==20493==    by 0x48D0EA3: __vfprintf_internal (vfprintf-internal.c:1346)
+==20493==    by 0x48BBEBE: printf (printf.c:33)
+==20493==    by 0x109DE2: main (test_cmd.c:191)
+==20493==  Uninitialised value was created by a heap allocation
+==20493==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20493==    by 0x10B645: read_all (cmd.c:140)
+==20493==    by 0x109D63: main (test_cmd.c:185)
+==20493== 
+==20493== 
+==20493== HEAP SUMMARY:
+==20493==     in use at exit: 0 bytes in 0 blocks
+==20493==   total heap usage: 1 allocs, 1 frees, 1 bytes allocated
+==20493== 
+==20493== All heap blocks were freed -- no leaks are possible
+==20493== 
+==20493== For lists of detected and suppressed errors, rerun with: -s
+==20493== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

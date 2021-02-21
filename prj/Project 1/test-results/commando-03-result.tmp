@@ -1,0 +1,95 @@
+(TEST 3) End of Input
+COMMENTS:
+Checks that if the end of input is reached, the program exits
+correctly by printing 'End of input'. End of input is triggered
+interactively by pressing 'Ctrl-d' in a terminal. In batch mode, it is
+triggered by reaching the end of an input stream (file). In such
+cases, C input functions like fgets() return NULL.
+
+
+program: ./commando --echo
+Failure messages:
+- FAILURE(139) due to Kill Signal from OS: likely a SEGFAULT occured
+- FAILURE: Valgrind reports reachable memory, may need to add free() or fclose()
+- FAILURE: Output Mismatch at lines marked
+
+--- Side by Side Differences ---
+- Expect output in: test-results/raw/commando-03-expect.tmp
+- Actual output in: test-results/raw/commando-03-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+==== EXPECT ====                                                                       ==== ACTUAL ====                                                                    
+@> help                                                                              <
+COMMANDO COMMANDS                                                                    <
+help               : show this message                                               <
+exit               : exit the program                                                <
+list               : list all jobs that have been started giving information on each <
+pause nanos secs   : pause for the given number of nanseconds and seconds            <
+output-for int     : print the output for given job number                           <
+output-all         : print output for all jobs                                       <
+wait-for int       : wait until the given job number finishes                        <
+wait-all           : wait for all jobs to finish                                     <
+command arg1 ...   : non-built-in is run as a job                                    <
+@> list                                                                              <
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                                          <
+@>                                                                                     @>
+End of input                                                                         <
+ALERTS:                                                                                ALERTS:
+--- Line Differences ---
+EXPECT:   1) @> help
+EXPECT:   2) COMMANDO COMMANDS
+EXPECT:   3) help               : show this message
+EXPECT:   4) exit               : exit the program
+EXPECT:   5) list               : list all jobs that have been started giving information on each
+EXPECT:   6) pause nanos secs   : pause for the given number of nanseconds and seconds
+EXPECT:   7) output-for int     : print the output for given job number
+EXPECT:   8) output-all         : print output for all jobs
+EXPECT:   9) wait-for int       : wait until the given job number finishes
+EXPECT:  10) wait-all           : wait for all jobs to finish
+EXPECT:  11) command arg1 ...   : non-built-in is run as a job
+EXPECT:  12) @> list
+EXPECT:  13) JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:  15) End of input
+
+--- Valgrind Log from: test-results/raw/commando-03-valgrd.tmp ---
+==21085== Memcheck, a memory error detector
+==21085== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==21085== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==21085== Command: ./commando --echo
+==21085== Parent PID: 21084
+==21085== 
+==21085== Invalid write of size 1
+==21085==    at 0x48DDA01: _IO_getline_info (iogetline.c:77)
+==21085==    by 0x48DC849: fgets (iofgets.c:53)
+==21085==    by 0x1095CC: main (commando.c:37)
+==21085==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==21085== 
+==21085== 
+==21085== Process terminating with default action of signal 11 (SIGSEGV)
+==21085==  Access not within mapped region at address 0x0
+==21085==    at 0x48DDA01: _IO_getline_info (iogetline.c:77)
+==21085==    by 0x48DC849: fgets (iofgets.c:53)
+==21085==    by 0x1095CC: main (commando.c:37)
+==21085==  If you believe this happened as a result of a stack
+==21085==  overflow in your program's main thread (unlikely but
+==21085==  possible), you can try to increase the size of the
+==21085==  main thread stack using the --main-stacksize= flag.
+==21085==  The main thread stack size used in this run was 8388608.
+==21085== 
+==21085== HEAP SUMMARY:
+==21085==     in use at exit: 8,200 bytes in 1 blocks
+==21085==   total heap usage: 1 allocs, 0 frees, 8,200 bytes allocated
+==21085== 
+==21085== 8,200 bytes in 1 blocks are still reachable in loss record 1 of 1
+==21085==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21085==    by 0x109599: main (commando.c:33)
+==21085== 
+==21085== LEAK SUMMARY:
+==21085==    definitely lost: 0 bytes in 0 blocks
+==21085==    indirectly lost: 0 bytes in 0 blocks
+==21085==      possibly lost: 0 bytes in 0 blocks
+==21085==    still reachable: 8,200 bytes in 1 blocks
+==21085==         suppressed: 0 bytes in 0 blocks
+==21085== 
+==21085== For lists of detected and suppressed errors, rerun with: -s
+==21085== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+

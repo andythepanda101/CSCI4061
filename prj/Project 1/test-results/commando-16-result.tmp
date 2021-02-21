@@ -1,0 +1,177 @@
+(TEST 16) pause finishes multiple jobs
+COMMENTS:
+Multiple jobs can finish during a pause of some length.
+
+
+program: ./commando --echo
+Failure messages:
+- FAILURE(139) due to Kill Signal from OS: likely a SEGFAULT occured
+- FAILURE: Valgrind reports reachable memory, may need to add free() or fclose()
+- FAILURE: Output Mismatch at lines marked
+
+--- Side by Side Differences ---
+- Expect output in: test-results/raw/commando-16-expect.tmp
+- Actual output in: test-results/raw/commando-16-actual.tmp
+- Differing lines have a character like '|' '>' or '<' in the middle
+==== EXPECT ====                                                          ==== ACTUAL ====                                                       
+@> cat test_data/quote.txt                                              | @>
+@> cat test_data/gettysburg.txt                                         <
+@> grep printf test_data/print_args.c                                   <
+@> pause 0 1                                                            <
+@> list                                                                 <
+JOB  #PID      STAT   STR_STAT OUTB COMMAND                             <
+0    %0           0    EXIT(0)  125 cat test_data/quote.txt             <
+1    %1           0    EXIT(0) 1511 cat test_data/gettysburg.txt        <
+2    %2           0    EXIT(0)   71 grep printf test_data/print_args.c  <
+@> output-all                                                           <
+@<<< Output for cat[%0] (125 bytes):                                    <
+----------------------------------------                                <
+Object-oriented programming is an exceptionally bad idea which could    <
+only have originated in California.                                     <
+                                                                        <
+-- Edsger Dijkstra                                                      <
+----------------------------------------                                <
+@<<< Output for cat[%1] (1511 bytes):                                   <
+----------------------------------------                                <
+Four score and seven years ago our fathers brought forth on this        <
+continent, a new nation, conceived in Liberty, and dedicated to the     <
+proposition that all men are created equal.                             <
+                                                                        <
+Now we are engaged in a great civil war, testing whether that nation,   <
+or any nation so conceived and so dedicated, can long endure. We are    <
+met on a great battle-field of that war. We have come to dedicate a     <
+portion of that field, as a final resting place for those who here      <
+gave their lives that that nation might live. It is altogether fitting  <
+and proper that we should do this.                                      <
+                                                                        <
+But, in a larger sense, we can not dedicate -- we can not consecrate    <
+-- we can not hallow -- this ground. The brave men, living and dead,    <
+who struggled here, have consecrated it, far above our poor power to    <
+add or detract. The world will little note, nor long remember what we   <
+say here, but it can never forget what they did here. It is for us the  <
+living, rather, to be dedicated here to the unfinished work which they  <
+who fought here have thus far so nobly advanced. It is rather for us    <
+to be here dedicated to the great task remaining before us -- that      <
+from these honored dead we take increased devotion to that cause for    <
+which they gave the last full measure of devotion -- that we here       <
+highly resolve that these dead shall not have died in vain -- that      <
+this nation, under God, shall have a new birth of freedom -- and that   <
+government of the people, by the people, for the people, shall not      <
+perish from the earth.                                                  <
+                                                                        <
+Abraham Lincoln                                                         <
+November 19, 1863                                                       <
+----------------------------------------                                <
+@<<< Output for grep[%2] (71 bytes):                                    <
+----------------------------------------                                <
+  printf("%d args received\n",argc);                                    <
+    printf("%d: %s\n",i,argv[i]);                                       <
+----------------------------------------                                <
+@> exit                                                                 <
+ALERTS:                                                                   ALERTS:
+@!!! cat[%0]: EXIT(0)                                                   <
+@!!! cat[%1]: EXIT(0)                                                   <
+@!!! grep[%2]: EXIT(0)                                                  <
+--- Line Differences ---
+EXPECT:   1) @> cat test_data/quote.txt
+EXPECT:   2) @> cat test_data/gettysburg.txt
+EXPECT:   3) @> grep printf test_data/print_args.c
+EXPECT:   4) @> pause 0 1
+EXPECT:   5) @> list
+EXPECT:   6) JOB  #PID      STAT   STR_STAT OUTB COMMAND
+EXPECT:   7) 0    %0           0    EXIT(0)  125 cat test_data/quote.txt 
+EXPECT:   8) 1    %1           0    EXIT(0) 1511 cat test_data/gettysburg.txt 
+EXPECT:   9) 2    %2           0    EXIT(0)   71 grep printf test_data/print_args.c 
+EXPECT:  10) @> output-all
+EXPECT:  11) @<<< Output for cat[%0] (125 bytes):
+EXPECT:  12) ----------------------------------------
+EXPECT:  13) Object-oriented programming is an exceptionally bad idea which could
+EXPECT:  14) only have originated in California.
+EXPECT:  15) 
+EXPECT:  16) -- Edsger Dijkstra
+EXPECT:  17) ----------------------------------------
+EXPECT:  18) @<<< Output for cat[%1] (1511 bytes):
+EXPECT:  19) ----------------------------------------
+EXPECT:  20) Four score and seven years ago our fathers brought forth on this
+EXPECT:  21) continent, a new nation, conceived in Liberty, and dedicated to the
+EXPECT:  22) proposition that all men are created equal.
+EXPECT:  23) 
+EXPECT:  24) Now we are engaged in a great civil war, testing whether that nation,
+EXPECT:  25) or any nation so conceived and so dedicated, can long endure. We are
+EXPECT:  26) met on a great battle-field of that war. We have come to dedicate a
+EXPECT:  27) portion of that field, as a final resting place for those who here
+EXPECT:  28) gave their lives that that nation might live. It is altogether fitting
+EXPECT:  29) and proper that we should do this.
+EXPECT:  30) 
+EXPECT:  31) But, in a larger sense, we can not dedicate -- we can not consecrate
+EXPECT:  32) -- we can not hallow -- this ground. The brave men, living and dead,
+EXPECT:  33) who struggled here, have consecrated it, far above our poor power to
+EXPECT:  34) add or detract. The world will little note, nor long remember what we
+EXPECT:  35) say here, but it can never forget what they did here. It is for us the
+EXPECT:  36) living, rather, to be dedicated here to the unfinished work which they
+EXPECT:  37) who fought here have thus far so nobly advanced. It is rather for us
+EXPECT:  38) to be here dedicated to the great task remaining before us -- that
+EXPECT:  39) from these honored dead we take increased devotion to that cause for
+EXPECT:  40) which they gave the last full measure of devotion -- that we here
+EXPECT:  41) highly resolve that these dead shall not have died in vain -- that
+EXPECT:  42) this nation, under God, shall have a new birth of freedom -- and that
+EXPECT:  43) government of the people, by the people, for the people, shall not
+EXPECT:  44) perish from the earth.
+EXPECT:  45) 
+EXPECT:  46) Abraham Lincoln
+EXPECT:  47) November 19, 1863
+EXPECT:  48) ----------------------------------------
+EXPECT:  49) @<<< Output for grep[%2] (71 bytes):
+EXPECT:  50) ----------------------------------------
+EXPECT:  51)   printf("%d args received\n",argc);
+EXPECT:  52)     printf("%d: %s\n",i,argv[i]);
+EXPECT:  53) ----------------------------------------
+EXPECT:  54) @> exit
+ACTUAL:   1) @>
+EXPECT:  56) @!!! cat[%0]: EXIT(0)
+EXPECT:  57) @!!! cat[%1]: EXIT(0)
+EXPECT:  58) @!!! grep[%2]: EXIT(0)
+
+--- Valgrind Log from: test-results/raw/commando-16-valgrd.tmp ---
+==21488== Memcheck, a memory error detector
+==21488== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==21488== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==21488== Command: ./commando --echo
+==21488== Parent PID: 21487
+==21488== 
+==21488== Invalid write of size 1
+==21488==    at 0x48DDA01: _IO_getline_info (iogetline.c:77)
+==21488==    by 0x48DC849: fgets (iofgets.c:53)
+==21488==    by 0x1095CC: main (commando.c:37)
+==21488==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==21488== 
+==21488== 
+==21488== Process terminating with default action of signal 11 (SIGSEGV)
+==21488==  Access not within mapped region at address 0x0
+==21488==    at 0x48DDA01: _IO_getline_info (iogetline.c:77)
+==21488==    by 0x48DC849: fgets (iofgets.c:53)
+==21488==    by 0x1095CC: main (commando.c:37)
+==21488==  If you believe this happened as a result of a stack
+==21488==  overflow in your program's main thread (unlikely but
+==21488==  possible), you can try to increase the size of the
+==21488==  main thread stack using the --main-stacksize= flag.
+==21488==  The main thread stack size used in this run was 8388608.
+==21488== 
+==21488== HEAP SUMMARY:
+==21488==     in use at exit: 8,200 bytes in 1 blocks
+==21488==   total heap usage: 1 allocs, 0 frees, 8,200 bytes allocated
+==21488== 
+==21488== 8,200 bytes in 1 blocks are still reachable in loss record 1 of 1
+==21488==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21488==    by 0x109599: main (commando.c:33)
+==21488== 
+==21488== LEAK SUMMARY:
+==21488==    definitely lost: 0 bytes in 0 blocks
+==21488==    indirectly lost: 0 bytes in 0 blocks
+==21488==      possibly lost: 0 bytes in 0 blocks
+==21488==    still reachable: 8,200 bytes in 1 blocks
+==21488==         suppressed: 0 bytes in 0 blocks
+==21488== 
+==21488== For lists of detected and suppressed errors, rerun with: -s
+==21488== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+
