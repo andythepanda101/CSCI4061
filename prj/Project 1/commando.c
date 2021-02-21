@@ -30,12 +30,28 @@ int main(int argc, char *argv[]){
   
   char *input = malloc(NAME_MAX*sizeof(char));
   cmdcol_t *cmdCol = malloc(sizeof(cmdcol_t));
+  cmdCol->size = 0;
+  
+  int i;
+  for(i = 0; i < MAX_CMDS; i++) {
+    cmdCol->cmd[i] = NULL;
+  }
+
+  int numlines = 0;
 
   while(1) {
     printf("@> ");
     fgets(input, MAX_LINE, stdin);
 
-    if(input == NULL) {
+    if(*input == '\0') {
+      printf("End of input");
+      break;
+    }
+
+    numlines += 1;
+
+    if(numlines > MAX_LINE) {
+      printf("End of input");
       break;
     }
 
@@ -77,6 +93,7 @@ int main(int argc, char *argv[]){
     }
   }
   cmdcol_freeall(cmdCol);
+  free(cmdCol);
   free(input);
   return 0;
 }

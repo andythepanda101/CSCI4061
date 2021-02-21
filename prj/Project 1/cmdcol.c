@@ -73,5 +73,4 @@ void cmdcol_freeall(cmdcol_t *col){
   for(int i = 0; i < col->size; i++){
     cmd_free(col->cmd[i]);
   }
-  free(col);
 }
