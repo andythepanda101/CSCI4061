@@ -116,9 +116,10 @@ void cmd_update_state(cmd_t *cmd, int nohang) {
 
         if(WIFEXITED(status)){
             cmd->status = WEXITSTATUS(status);
+            snprintf(cmd->str_status,STATUS_LEN,"EXIT(%d)",WEXITSTATUS(status));
             cmd->finished = 1;
             cmd_fetch_output(cmd);
-            printf("%s[#%d]: EXIT(%d)\n", cmd->name,(int) cmd->pid, cmd->status);
+            printf("@!!! %s[#%d]: EXIT(%d)\n", cmd->name,(int) cmd->pid, cmd->status);
         }
     }
 }
@@ -156,7 +157,7 @@ char *read_all(int fd, int *nread) {
         }
     }
     buf[cur_pos] = '\0';
-    *nread = cur_pos + 1;
+    *nread = cur_pos;
     return buf;
 }
 
