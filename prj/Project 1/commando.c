@@ -1,8 +1,10 @@
 #include "commando.h"
 
 void print_output(cmdcol_t *col, int job) {
-  cmd_fetch_output(col->cmd[job]);
+  printf("@<<< Output for %s[#%d] (%d bytes):\n", col->cmd[job]->name, col->cmd[job]->pid, col->cmd[job]->output_size);
+  printf("----------------------------------------\n");
   cmd_print_output(col->cmd[job]);
+  printf("----------------------------------------\n");
 }
 
 void wait_for(cmdcol_t *col, int job) {
