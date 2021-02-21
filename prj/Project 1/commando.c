@@ -37,21 +37,12 @@ int main(int argc, char *argv[]){
     cmdCol->cmd[i] = NULL;
   }
 
-  int numlines = 0;
-
   while(1) {
     printf("@> ");
     fgets(input, MAX_LINE, stdin);
 
-    if(*input == '\0') {
-      printf("End of input");
-      break;
-    }
-
-    numlines += 1;
-
-    if(numlines > MAX_LINE) {
-      printf("End of input");
+    if(input == NULL) {
+      printf("End of input\n");
       break;
     }
 
