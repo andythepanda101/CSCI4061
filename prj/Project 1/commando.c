@@ -9,10 +9,6 @@ void wait_for(cmdcol_t *col, int job) {
   cmd_update_state(col->cmd[job], DOBLOCK);
 }
 
-void help() {
-  printf("COMMANDO COMMANDS\nhelp               : show this message\nexit               : exit the program\nlist               : list all jobs that have been started giving information on each\npause nanos secs   : pause for the given number of nanseconds and seconds\noutput-for int     : print the output for given job number\noutput-all         : print output for all jobs\nwait-for int       : wait until the given job number finishes\nwait-all           : wait for all jobs to finish\ncommand arg1 ...   : non-built-in is run as a job");
-}
-
 /*
 1.Print the prompt @>
 2.Use a call to fgets() to read a whole line of text from the user. 
@@ -28,11 +24,11 @@ This will be a long if/else chain of statements.
 int main(int argc, char *argv[]){
   int echo = 0;
   if(argc > 1) {
-    echo = strcmp("--echo", argv[2]) || getenv("COMMANDO_ECHO");
+    echo = !strcmp("--echo", argv[1]) || getenv("COMMANDO_ECHO");
   }
   setvbuf(stdout, NULL, _IONBF, 0); // Turn off output buffering
-  char *input = NULL;
-
+  
+  char *input = malloc(NAME_MAX*sizeof(char));
   cmdcol_t *cmdCol = malloc(sizeof(cmdcol_t));
 
   while(1) {
@@ -48,28 +44,28 @@ int main(int argc, char *argv[]){
     }
   
     char *tokens[ARG_MAX];
-    int *numTokens = 0;
-    parse_into_tokens(input, tokens, numTokens);
+    int numTokens = 0;
+    parse_into_tokens(input, tokens, &numTokens);
 
     if(numTokens != 0) {
-      if(strcmp(tokens[0], "help")) {
-        help();
-      } else if (strcmp(tokens[0], "exit")) {
+      if(!strcmp(tokens[0], "help")) {
+        printf("COMMANDO COMMANDS\nhelp               : show this message\nexit               : exit the program\nlist               : list all jobs that have been started giving information on each\npause nanos secs   : pause for the given number of nanseconds and seconds\noutput-for int     : print the output for given job number\noutput-all         : print output for all jobs\nwait-for int       : wait until the given job number finishes\nwait-all           : wait for all jobs to finish\ncommand arg1 ...   : non-built-in is run as a job\n");
+      } else if (!strcmp(tokens[0], "exit")) {
         break;
-      } else if (strcmp(tokens[0], "list")) {
+      } else if (!strcmp(tokens[0], "list")) {
         cmdcol_print(cmdCol);
-      } else if (strcmp(tokens[0], "pause")) {
+      } else if (!strcmp(tokens[0], "pause")) {
         pause_for((long int) tokens[1],(int) *tokens[2]);
-      } else if (strcmp(tokens[0], "output-for")) {
+      } else if (!strcmp(tokens[0], "output-for")) {
         print_output(cmdCol, atoi(tokens[1]));
-      } else if (strcmp(tokens[0], "output-all")) {
+      } else if (!strcmp(tokens[0], "output-all")) {
         int i;
         for(i = 0; i < cmdCol->size; i++) {
           print_output(cmdCol, i);
         }
-      } else if (strcmp(tokens[0], "wait-for")) {
+      } else if (!strcmp(tokens[0], "wait-for")) {
         wait_for(cmdCol, atoi(tokens[1]));
-      } else if (strcmp(tokens[0], "wait-all")) {
+      } else if (!strcmp(tokens[0], "wait-all")) {
         cmdcol_update_state(cmdCol, DOBLOCK);
       } else {
         cmd_t *newCmd;
@@ -81,5 +77,6 @@ int main(int argc, char *argv[]){
     }
   }
   cmdcol_freeall(cmdCol);
+  free(input);
   return 0;
 }
