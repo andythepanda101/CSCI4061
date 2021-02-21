@@ -37,17 +37,19 @@ int main(int argc, char *argv[]){
     cmdCol->cmd[i] = NULL;
   }
 
+  char *inputErr;
+
   while(1) {
     printf("@> ");
-    fgets(input, MAX_LINE, stdin);
+    inputErr = fgets(input, MAX_LINE, stdin);
 
-    if(input == NULL) {
-      printf("End of input\n");
+    if(inputErr == NULL) {
+      printf("\nEnd of input\n");
       break;
     }
 
     if(echo) {
-      printf("%s\n", input);
+      printf("%s", input);
     }
   
     char *tokens[ARG_MAX];
