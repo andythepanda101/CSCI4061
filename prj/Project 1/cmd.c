@@ -117,11 +117,7 @@ void cmd_update_state(cmd_t *cmd, int nohang) {
             cmd->status = WEXITSTATUS(status);
             cmd->finished = 1;
             cmd_fetch_output(cmd);
-            printf("%s[#%d]: EXIT(%d)", cmd->name,(int) cmd->pid, cmd->status);
-        }
-        else{
-            printf("Child terminated abnormally\n");
-            exit(1);
+            printf("%s[#%d]: EXIT(%d)\n", cmd->name,(int) cmd->pid, cmd->status);
         }
     }
 }
@@ -138,13 +134,16 @@ void cmd_update_state(cmd_t *cmd, int nohang) {
 // string is null-terminated. Does not call close() on the fd as this
 // is done elsewhere.
 char *read_all(int fd, int *nread) {
-    int max_size = 1; int cur_pos = 0;
+    int max_size = 1; 
+    int cur_pos = 0; 
+    int bytesRead = 0;
     char *buf = malloc(max_size*sizeof(char));
 
     while(1) {
-        int bytesRead = read(fd, &buf[cur_pos++], max_size - cur_pos);
+        bytesRead = read(fd, &buf[cur_pos], max_size - cur_pos - 1);
+        cur_pos += 1;
         nread += bytesRead;
-        if(bytesRead == 0) {
+        if(!bytesRead) {
             break;
         }
         if(max_size == cur_pos) {
@@ -176,7 +175,7 @@ void cmd_fetch_output(cmd_t *cmd) {
         close(cmd->out_pipe[PREAD]);
         return;
     }
-    printf("%s[#%d] not finished yet", cmd->name, cmd->pid);
+    printf("%s[#%d] not finished yet\n", cmd->name, cmd->pid);
 }
 
 // Prints the output of the cmd contained in the output field if it is
@@ -187,23 +186,28 @@ void cmd_fetch_output(cmd_t *cmd) {
 // if output is NULL. The message includes the command name and PID.
 void cmd_print_output(cmd_t *cmd) {
     if(cmd->output == NULL) {
-        printf("%s[#%d] : output not ready", cmd->name, cmd->pid);
+        printf("%s[#%d] : output not ready\n", cmd->name, cmd->pid);
         return;
     }
     printf("%s\n",(char *) cmd->output);
 }
-
+/*
 int main(void) {
-    printf("Started");
+    printf("Started\n");
     cmd_t *myCmd;
     char *argv[4] = {"ls", "-l", NULL, NULL};
     myCmd = cmd_new(argv);
-    printf("cmd Created");
+    printf("cmd Created\n");
     cmd_start(myCmd);
-    printf("cmd Started");
-    cmd_update_state(myCmd, DOBLOCK);
-    printf("cmd Updated");
+    printf("cmd Started\n");
+    while(myCmd->finished != 1) {
+        cmd_update_state(myCmd, NOBLOCK);
+        printf("cmd Updated: %d\n", myCmd->status);
+    }
+    printf("cmd ended \n");
     cmd_fetch_output(myCmd);
+    printf("output fetched \n");
     cmd_print_output(myCmd);
     cmd_free(myCmd);
-}
+    return 0;
+}*/
