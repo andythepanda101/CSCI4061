@@ -53,7 +53,7 @@ void cmdcol_print(cmdcol_t *col){
 // MAX_CMDS, the maximum number commands supported.
 void cmdcol_add(cmdcol_t *col, cmd_t *cmd){
   if(col->size + 1 > MAX_CMDS){
-    //report an error
+    printf("ERROR: adding another cmd would exceed MAX_CMDS");
   }
   col->cmd[col->size] = cmd;
   col->size += 1;
