@@ -68,4 +68,8 @@ void cmdcol_update_state(cmdcol_t *col, int nohang){
   }
 }
 
-void cmdcol_freeall(cmdcol_t *col);
+void cmdcol_freeall(cmdcol_t *col){
+  for(int i = 0; i < col->size; i++){
+    free(col->cmd[i]);
+  }
+}
