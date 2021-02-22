@@ -13,11 +13,11 @@ void wait_for(cmdcol_t *col, int job) {
 
 /*
 1.Print the prompt @>
-2.Use a call to fgets() to read a whole line of text from the user. 
+2.Use a call to fgets() to read a whole line of text from the user.
 The #define MAX_LINE limits the length of what will be read. If no input is remains, print End of input and break out of the loop.
 3.Echo (print) given input if echoing is enabled.
 4.Use a call to parse_into_tokens() from util.c to break the line up by spaces. If there are no tokens, jump to the end of the loop (the use just hit enter).
-5.Examine the 0th token for built-ins like help, list, and so forth. Use strncmp() to determine if any match and make appropriate calls. 
+5.Examine the 0th token for built-ins like help, list, and so forth. Use strncmp() to determine if any match and make appropriate calls.
 This will be a long if/else chain of statements.
 6.If no built-ins match, create a new cmd_t instance where the tokens are the argv[] for it and start it running.
 7.At the end of each loop, update the state of all child processes via a call to cmdcol_update_state().
@@ -29,11 +29,11 @@ int main(int argc, char *argv[]){
     echo |= !strcmp("--echo", argv[1]);
   }
   setvbuf(stdout, NULL, _IONBF, 0); // Turn off output buffering
-  
+
   char *input = malloc(NAME_MAX*sizeof(char));
   cmdcol_t *cmdCol = malloc(sizeof(cmdcol_t));
   cmdCol->size = 0;
-  
+
   int i;
   for(i = 0; i < MAX_CMDS; i++) {
     cmdCol->cmd[i] = NULL;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     if(echo) {
       printf("%s", input);
     }
-  
+
     char *tokens[ARG_MAX];
     int numTokens = 0;
     parse_into_tokens(input, tokens, &numTokens);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
       } else if (!strcmp(tokens[0], "list")) {
         cmdcol_print(cmdCol);
       } else if (!strcmp(tokens[0], "pause")) {
-        pause_for((long) atoi(tokens[1]),(int) atoi(tokens[2]));
+        pause_for((long) atol(tokens[1]), (int) atoi(tokens[2]));
       } else if (!strcmp(tokens[0], "output-for")) {
         print_output(cmdCol, atoi(tokens[1]));
       } else if (!strcmp(tokens[0], "output-all")) {
