@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
       } else if (!strcmp(tokens[0], "list")) {
         cmdcol_print(cmdCol);
       } else if (!strcmp(tokens[0], "pause")) {
-        pause_for((long int) tokens[1],(int) *tokens[2]);
+        pause_for((long) atoi(tokens[1]),(int) atoi(tokens[2]));
       } else if (!strcmp(tokens[0], "output-for")) {
         print_output(cmdCol, atoi(tokens[1]));
       } else if (!strcmp(tokens[0], "output-all")) {
