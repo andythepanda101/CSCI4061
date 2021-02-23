@@ -1,5 +1,6 @@
 #include "commando.h"
 
+// helper functions for printing output and waiting
 void print_output(cmdcol_t *col, int job) {
   printf("@<<< Output for %s[#%d] (%d bytes):\n", col->cmd[job]->name, col->cmd[job]->pid, col->cmd[job]->output_size);
   printf("----------------------------------------\n");
@@ -24,69 +25,83 @@ This will be a long if/else chain of statements.
 */
 
 int main(int argc, char *argv[]){
+  // check if echoing on
   int echo = getenv("COMMANDO_ECHO") != NULL;
   if(argc > 1) {
     echo |= !strcmp("--echo", argv[1]);
   }
+
   setvbuf(stdout, NULL, _IONBF, 0); // Turn off output buffering
 
+  // some vars for storing input, and allocing a col structure
   char *input = malloc(NAME_MAX*sizeof(char));
   cmdcol_t *cmdCol = malloc(sizeof(cmdcol_t));
-  cmdCol->size = 0;
+  char *inputErr;
 
-  int i;
-  for(i = 0; i < MAX_CMDS; i++) {
+  // initialize some values in each cmd of col
+  cmdCol->size = 0;
+  for(int i = 0; i < MAX_CMDS; i++) {
     cmdCol->cmd[i] = NULL;
   }
 
-  char *inputErr;
-
+  // repeatedly check for cmd input
   while(1) {
+    // "carrot"
     printf("@> ");
+    // read an input upon pressing enter
     inputErr = fgets(input, MAX_LINE, stdin);
 
+    // if error when reading input
     if(inputErr == NULL) {
       printf("\nEnd of input\n");
       break;
     }
 
+    // echo to out if echoing turned on
     if(echo) {
       printf("%s", input);
     }
 
+    // token holders
     char *tokens[ARG_MAX];
     int numTokens = 0;
+    // read input into tokens
     parse_into_tokens(input, tokens, &numTokens);
 
+    // if there are tokens (commands) in the input
     if(numTokens != 0) {
       if(!strcmp(tokens[0], "help")) {
         printf("COMMANDO COMMANDS\nhelp               : show this message\nexit               : exit the program\nlist               : list all jobs that have been started giving information on each\npause nanos secs   : pause for the given number of nanseconds and seconds\noutput-for int     : print the output for given job number\noutput-all         : print output for all jobs\nwait-for int       : wait until the given job number finishes\nwait-all           : wait for all jobs to finish\ncommand arg1 ...   : non-built-in is run as a job\n");
       } else if (!strcmp(tokens[0], "exit")) {
-        break;
+          break;
       } else if (!strcmp(tokens[0], "list")) {
-        cmdcol_print(cmdCol);
+          cmdcol_print(cmdCol);
       } else if (!strcmp(tokens[0], "pause")) {
-        pause_for((long) atol(tokens[1]), (int) atoi(tokens[2]));
+          pause_for((long) atol(tokens[1]), (int) atoi(tokens[2]));
       } else if (!strcmp(tokens[0], "output-for")) {
-        print_output(cmdCol, atoi(tokens[1]));
+          print_output(cmdCol, atoi(tokens[1]));
       } else if (!strcmp(tokens[0], "output-all")) {
-        int i;
-        for(i = 0; i < cmdCol->size; i++) {
-          print_output(cmdCol, i);
-        }
+          for(int i = 0; i < cmdCol->size; i++) {
+            print_output(cmdCol, i);
+          }
       } else if (!strcmp(tokens[0], "wait-for")) {
-        wait_for(cmdCol, atoi(tokens[1]));
+          wait_for(cmdCol, atoi(tokens[1]));
       } else if (!strcmp(tokens[0], "wait-all")) {
-        cmdcol_update_state(cmdCol, DOBLOCK);
+          cmdcol_update_state(cmdCol, DOBLOCK);
       } else {
-        cmd_t *newCmd;
-        newCmd = cmd_new(tokens);
-        cmd_start(newCmd);
-        cmdcol_add(cmdCol, newCmd);
+          cmd_t *newCmd;
+          newCmd = cmd_new(tokens);
+          //cmd_start(newCmd);
+          cmdcol_add(cmdCol, newCmd);
+          cmd_start(newCmd);
+          // new
+          cmdcol_update_state(cmdCol, NOBLOCK);
       }
       cmdcol_update_state(cmdCol, NOBLOCK);
     }
   }
+
+  // free the memory allocated
   cmdcol_freeall(cmdCol);
   free(cmdCol);
   free(input);

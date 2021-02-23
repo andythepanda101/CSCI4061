@@ -62,13 +62,13 @@ void cmdcol_add(cmdcol_t *col, cmd_t *cmd){
 
 // Update each cmd in col by calling cmd_update_state() which is also
 // passed the block argument (either NOBLOCK or DOBLOCK)
-// idk if this is right or not,
 void cmdcol_update_state(cmdcol_t *col, int nohang){
   for(int i = 0; i < col->size; i++){
     cmd_update_state(col->cmd[i],nohang);
   }
 }
 
+// free each cmd in col by calling cmd_free on each cmd
 void cmdcol_freeall(cmdcol_t *col){
   for(int i = 0; i < col->size; i++){
     cmd_free(col->cmd[i]);
