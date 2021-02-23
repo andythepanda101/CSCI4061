@@ -52,30 +52,33 @@ void cmd_free(cmd_t *cmd) {
 // command. For both parent and child, ensures that unused file
 // descriptors for the pipe are closed (write in the parent, read in
 // the child).
-void cmd_start(cmd_t *cmd) {
-    int pipe_result = pipe(cmd->out_pipe); // creates parent child pipe
+
+void cmd_start(cmd_t *cmd) { 
+    int out_pipe[2]; // creates parent child pipe
+    int pipe_result = pipe(out_pipe);
     if(pipe_result != 0) { // error checking for pipe
         perror("Failed to create pipe");
         exit(1);
     }
 
     pid_t child_pid = fork(); // forks child
-    if(child_pid < 0) { // error checking for child
+    if(child_pid < 0){ // error checking for child
         perror("Failed to fork");
         exit(1);
     }
 
     if(child_pid == 0) { // child closes read pipe, changes std out to write pipe, and executes command
-        close(cmd->out_pipe[PREAD]);
-        dup2(cmd->out_pipe[PWRITE], STDOUT_FILENO);
+        close(out_pipe[PREAD]);
+        dup2(out_pipe[PWRITE], STDOUT_FILENO);
         execvp(cmd->name, cmd->argv);
         exit(0);
     }
     cmd->pid = child_pid; // saves child pid
-    close(cmd->out_pipe[PWRITE]); // closes parent write pipe
+    cmd->out_pipe[PWRITE] = out_pipe[PWRITE]; // sets pipes of cmd
+    cmd->out_pipe[PREAD] = out_pipe[PREAD];
+    close(out_pipe[PWRITE]); // closes parent write pipe
     snprintf(cmd->str_status,STATUS_LEN,"%s","RUN"); // changes str_status of command to RUN
 }
-
 // If the finished flag is 1, does nothing. Otherwise, updates the
 // state of cmd.  Uses waitpid() and the pid field of command to wait
 // selectively for the given process. Passes nohang (one of DOBLOCK or

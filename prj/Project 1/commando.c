@@ -70,6 +70,7 @@ int main(int argc, char *argv[]){
 
     // if there are tokens (commands) in the input
     if(numTokens != 0) {
+      cmdcol_update_state(cmdCol, NOBLOCK);
       if(!strcmp(tokens[0], "help")) {
         printf("COMMANDO COMMANDS\nhelp               : show this message\nexit               : exit the program\nlist               : list all jobs that have been started giving information on each\npause nanos secs   : pause for the given number of nanseconds and seconds\noutput-for int     : print the output for given job number\noutput-all         : print output for all jobs\nwait-for int       : wait until the given job number finishes\nwait-all           : wait for all jobs to finish\ncommand arg1 ...   : non-built-in is run as a job\n");
       } else if (!strcmp(tokens[0], "exit")) {
