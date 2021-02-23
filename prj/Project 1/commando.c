@@ -94,8 +94,6 @@ int main(int argc, char *argv[]){
           //cmd_start(newCmd);
           cmdcol_add(cmdCol, newCmd);
           cmd_start(newCmd);
-          // new
-          cmdcol_update_state(cmdCol, NOBLOCK);
       }
       cmdcol_update_state(cmdCol, NOBLOCK);
     }
