@@ -213,8 +213,12 @@ int server_client_ready(server_t *server, int idx) {
 void server_handle_client(server_t *server, int idx) {
     mesg_t *mesg;
     read(server->client[idx].to_server_fd, mesg, sizeof(mesg_t));
-    if(mesg->kind == 10 | mesg->kind == 30) {
-        server_broadcast(server, mesg);
+    if(mesg->kind == 10) { // if mesg is normal message
+      server_broadcast(server, mesg);
+    }
+    if(mesg->kind == 30){ // if mesg is client departed
+      server_broadcast(server, mesg);
+      server_remove_client(server,idx);
     }
 }
 

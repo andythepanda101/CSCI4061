@@ -50,13 +50,14 @@ int main(int argc, char* argv[]){
     for(int ind = 0; ind < newserver.n_clients; ind++){
       if(server_client_ready(&newserver, ind)){
         server_handle_client(&newserver, ind);
-        server_broadcast(&newserver, );
+        /*
+        mesg_t *mesg;
+        read(server.client[ind].to_server_fd, mesg, sizeof(mesg_t));
+        if(mesg->kind == 30 | mesg->kind == 40) {
+            server_remove_client(&newserver, i);
+        }
+        */
       }
-
-
     }
-
-
-
   }
 }
