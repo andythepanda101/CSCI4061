@@ -1,14 +1,16 @@
 #include "blather.h"
 
 void *client_thread(void *vargp) {
-    simpio_noncanonical_terminal_mode()
-    simpio_t *simpio;
-    simpio_set_prompt(simpio, PROMPT);
     simpio_reset(simpio);
     while(simpio.end_of_input != 1) {
         simpio_get_char(simpio);
         if(simpio.line_ready == 1) {
-            
+            mesg_t send;
+            send->kind = BL_MESG;
+            strcpy(send->name, argv[1]);
+            strncpy(mesg->body, simpio->buf, MAXLINE);
+            write(to_server_fd, send, sizeof(mesg_t));
+            simpio_reset(simpio);
         }
     }
     iprintf(simpio, "End of Input, Departing");
@@ -20,7 +22,21 @@ void *client_thread(void *vargp) {
 }
 
 void *server_thread(void *vargp) {
-
+    do {
+        mesg_t *read_message;
+        read(to_client_fd, read_message, sizeof(mesg_t));
+        switch(read_message->kind) {
+            case BL_MESG:
+                iprintf(simpio, "[%d] : %d", read_message->name, read_message->body);
+            case BL_JOINED:
+                iprintf(simpio, "-- %d JOINED --", read_message->name);
+            case BL_DEPARTED:
+                iprintf(simpio, "-- %d DEPARTED --", read_message->name);
+            case BL_SHUTDOWN:
+                iprintf(simpio, "!!! server is shutting down !!!");
+        }
+    } while(read_message->kind != BL_SHUTDOWN)
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -43,13 +59,13 @@ int main(int argc, char *argv[]) {
     mkfifo(to_client_fname, 0666);
     mkfifo(to_server_fname, 0666);
 
-    int to_client_fd = open(to_client_fname, O_RDONLY);
-    int to_server_fd = open(to_server_fname, O_WRONLY);
+    int to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
+    int to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
 
     char server_name_2[MAXPATH];
     strcpy(server_name_2, argv[1]);
     strcat(server_name_2, ".fifo");
-    int join_fd = open(server_name_2, O_RDONLY);
+    int join_fd = open(server_name_2, O_RDONLY | O_NONBLOCK);
 
     join_t join;
     strncpy(join->name, argv[2], MAXPATH);
@@ -57,6 +73,10 @@ int main(int argc, char *argv[]) {
     strncpy(join->to_server_fname, to_server_fname, MAXPATH);
 
     write(join_fd, join, sizeof(join_t));
+
+    simpio_noncanonical_terminal_mode()
+    simpio_t *simpio;
+    simpio_set_prompt(simpio, PROMPT);
 
     pthread_t client_thread_id;
     pthread_t server_thread_id;
