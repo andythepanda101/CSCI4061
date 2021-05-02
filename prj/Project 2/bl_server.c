@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #include "blather.h"
 #include "util.c"
 #include <unistd.h> // signal handling
@@ -61,6 +60,3 @@ int main(int argc, char* argv[]){
 
   }
 }
-=======
-#include "blather.h"
->>>>>>> 4c8b3c4781f396fab512c46ab9299af78b6ec60b

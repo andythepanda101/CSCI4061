@@ -21,7 +21,7 @@ client_t *server_get_client(server_t *server, int idx) {
 // log_fd is position for appending to the end of the file. Create the
 // POSIX semaphore "/server_name.sem" and initialize it to 1 to
 // control access to the who_t portion of the log.
-// 
+//
 // LOG Messages:
 // log_printf("BEGIN: server_start()\n");              // at beginning of function
 // log_printf("END: server_start()\n");                // at end of function
@@ -38,7 +38,7 @@ void server_start(server_t *server, char *server_name, int perms) {
 // Shut down the server. Close the join FIFO and unlink (remove) it so
 // that no further clients can join. Send a BL_SHUTDOWN message to all
 // clients and proceed to remove all clients in any order.
-// 
+//
 // ADVANCED: Close the log file. Close the log semaphore and unlink
 // it.
 //
@@ -50,7 +50,7 @@ void server_shutdown(server_t *server) {
     char server_name_2[MAXPATH];
     strcpy(server_name_2, server->server_name);
     strcat(server_name_2, ".fifo");
-    remove(server_name_2);  
+    remove(server_name_2);
     mesg_t* shutdown_mesg;
     shutdown_mesg->kind = BL_SHUTDOWN;
     server_broadcast(server, shutdown_mesg);
@@ -121,11 +121,11 @@ void server_broadcast(server_t *server, mesg_t *mesg) {
 // data_ready flags of each of client if data is ready for them.
 // Makes use of the poll() system call to efficiently determine which
 // sources are ready.
-// 
+//
 // NOTE: the poll() system call will return -1 if it is interrupted by
 // the process receiving a signal. This is expected to initiate server
 // shutdown and is handled by returning immediagely from this function.
-// 
+//
 // LOG Messages:
 // log_printf("BEGIN: server_check_sources()\n");             // at beginning of function
 // log_printf("poll()'ing to check %d input sources\n",...);  // prior to poll() call
@@ -209,7 +209,7 @@ int server_client_ready(server_t *server, int idx) {
 // log_printf("BEGIN: server_handle_client()\n");           // at beginning of function
 // log_printf("client %d '%s' DEPARTED\n",                  // indicates client departed
 // log_printf("client %d '%s' MESSAGE '%s'\n",              // indicates client message
-// log_printf("END: server_handle_client()\n");             // at end of function 
+// log_printf("END: server_handle_client()\n");             // at end of function
 void server_handle_client(server_t *server, int idx) {
     mesg_t *mesg;
     read(server->client[idx].to_server_fd, mesg, sizeof(mesg_t));
