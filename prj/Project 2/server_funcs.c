@@ -1,11 +1,11 @@
-#include blather.h
+#include "blather.h"
 
 // Gets a pointer to the client_t struct at the given index. If the
 // index is beyond n_clients, the behavior of the function is
 // unspecified and may cause a program crash.
 client_t *server_get_client(server_t *server, int idx) {
     if(idx < server->n_clients) {
-        return server->client[idx];
+        return &server->client[idx];
     } else {
         exit(1);
     }
@@ -26,7 +26,6 @@ client_t *server_get_client(server_t *server, int idx) {
 // log_printf("BEGIN: server_start()\n");              // at beginning of function
 // log_printf("END: server_start()\n");                // at end of function
 void server_start(server_t *server, char *server_name, int perms) {
-    server = new server_t;
     strcpy(server->server_name, server_name);
     char server_name_2[MAXPATH];
     strcpy(server_name_2, server_name);
@@ -52,7 +51,7 @@ void server_shutdown(server_t *server) {
     strcpy(server_name_2, server->server_name);
     strcat(server_name_2, ".fifo");
     remove(server_name_2);  
-    mesg_t shutdown_mesg = new mesg_t;
+    mesg_t* shutdown_mesg;
     shutdown_mesg->kind = BL_SHUTDOWN;
     server_broadcast(server, shutdown_mesg);
     for(int i = 0; i < server->n_clients; i++) {
@@ -72,13 +71,13 @@ void server_shutdown(server_t *server) {
 // log_printf("END: server_add_client()\n");           // at end of function
 int server_add_client(server_t *server, join_t *join) {
     if(server->n_clients < MAXCLIENTS) {
-        client_t client = new client_t;
+        client_t *client;
         strncpy(client->name, join->name, MAXPATH);
         strncpy(client->to_client_fname, join->to_client_fname, MAXPATH);
         strncpy(client->to_server_fname, join->to_server_fname, MAXPATH);
         client->to_client_fd = open(client->to_client_fname,O_WRONLY | O_NONBLOCK);
         client->to_server_fd = open(client->to_server_fname,O_RDONLY | O_NONBLOCK);
-        server->client[server->n_clients] = client;
+        server->client[server->n_clients] = *client;
         server->n_clients = server->n_clients + 1;
         client->data_ready = 0;
         return 0;
@@ -92,13 +91,13 @@ int server_add_client(server_t *server, join_t *join) {
 // preserving their order in the array; decreases n_clients. Returns 0
 // on success, 1 on failure.
 int server_remove_client(server_t *server, int idx) {
-    client_t *client = server->client[idx];
+    client_t *client = &server->client[idx];
     close(client->to_client_fd);
     close(client->to_server_fd);
     remove(client->to_client_fname);
     remove(client->to_server_fname);
     for(int i = idx; i < server->n_clients - 1; i++) {
-        server->clients[i] = server->clients[i + 1];
+        server->client[i] = server->client[i + 1];
     }
     server->n_clients = server->n_clients - 1;
     return 0;
@@ -111,7 +110,9 @@ int server_remove_client(server_t *server, int idx) {
 // should not be written to the log.
 void server_broadcast(server_t *server, mesg_t *mesg) {
     for(int i = 0; i < server->n_clients; i++) {
-        write(server->clients[i]->to_client_fd, mesg, sizeof(mesg_t));
+        if(strcmp(mesg->name, server->client[i].name) != 0) {
+            write(server->client[i].to_client_fd, mesg, sizeof(mesg_t));
+        }
     }
 }
 
@@ -135,25 +136,30 @@ void server_broadcast(server_t *server, mesg_t *mesg) {
 // log_printf("END: server_check_sources()\n");               // at end of function
 void server_check_sources(server_t *server) {
     int ret;
-    pollfd_t pollfd = new pollfd_t; 
-    pollfd->fd = server->join_fd;
-    pollfd->events = POLLIN;
-    ret = poll(pollfd, 1, 0);
-    if(ret > 0) {
-        server->clients[i]->data_ready = 1;
+    struct pollfd fds[1];
+    fds[0].fd = server->join_fd;
+    fds[0].events = POLLIN;
+    ret = poll(fds, 1, 10);
+    if((ret > 0) && (fds[0].revents & POLLIN)) {
+        server->join_ready = 1;
     } else if(ret = -1) {
         return;
     }
+
+    struct pollfd fds2[server->n_clients];
     for(int i = 0; i < server->n_clients; i++) {
-        pollfd_t pollfd = new pollfd_t; 
-        pollfd->fd = server->clients[i]->to_server_fd;
-        pollfd->events = POLLIN;
-        ret = poll(pollfd, 1, 0);
-        if(ret > 0) {
-            server->clients[i]->data_ready = 1;
-        } else if(ret = -1) {
-            return;
+        fds2[i].fd = server->client[i].to_server_fd;
+        fds2[i].events = POLLIN;
+    }
+    ret = poll(fds2, server->n_clients, 10);
+    if(ret > 0) {
+        for(int i = 0; i < server->n_clients; i++) {
+            if(fds2[i].revents & POLLIN) {
+                server->client[i].data_ready = 1;
+            }
         }
+    } else if(ret = -1) {
+        return;
     }
 }
 
@@ -172,16 +178,20 @@ int server_join_ready(server_t *server) {
 // log_printf("join request for new client '%s'\n",...);      // reports name of new client
 // log_printf("END: server_handle_join()\n");                 // at end of function
 void server_handle_join(server_t *server) {
-    join_t join = new join_t;
+    join_t *join;
     read(server->join_fd, join, sizeof(join_t));
     server_add_client(server, join);
     server->join_ready = 0;
+    mesg_t *mesg;
+    mesg->kind = BL_JOINED;
+    strncpy(mesg->name, join->name, MAXPATH);
+    server_broadcast(server, mesg);
 }
 
 // Return the data_ready field of the given client which indicates
 // whether the client has data ready to be read from it.
 int server_client_ready(server_t *server, int idx) {
-    return server->client[idx]->data_ready;
+    return server->client[idx].data_ready;
 }
 
 // Process a message from the specified client. This function should
@@ -201,9 +211,11 @@ int server_client_ready(server_t *server, int idx) {
 // log_printf("client %d '%s' MESSAGE '%s'\n",              // indicates client message
 // log_printf("END: server_handle_client()\n");             // at end of function 
 void server_handle_client(server_t *server, int idx) {
-    mesg_t mesg;
-    read(server->client[idx]->to_server_fd, mesg, sizeof(mesg_t));
-    
+    mesg_t *mesg;
+    read(server->client[idx].to_server_fd, mesg, sizeof(mesg_t));
+    if(mesg->kind == 10 | mesg->kind == 30) {
+        server_broadcast(server, mesg);
+    }
 }
 
 void server_tick(server_t *server);
