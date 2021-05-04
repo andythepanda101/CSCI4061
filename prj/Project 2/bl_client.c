@@ -1,51 +1,62 @@
 #include "blather.h"
 
-void *client_thread(void *vargp) {
+char client_name [MAXNAME];
+char server_name [MAXPATH];
+int to_client_fd;
+int to_server_fd;
+
+void *client_thread(void *param) {
+    simpio_t *simpio = (simpio_t*) param;
     simpio_reset(simpio);
-    while(simpio.end_of_input != 1) {
+    while(simpio->end_of_input != 1) {
         simpio_get_char(simpio);
-        if(simpio.line_ready == 1) {
-            mesg_t send;
-            send->kind = BL_MESG;
-            strcpy(send->name, argv[1]);
-            strncpy(mesg->body, simpio->buf, MAXLINE);
+        if(simpio->line_ready == 1) {
+            mesg_t message;
+            mesg_t* send = &message;
+            send->kind = 10;
+            strcpy(send->name, server_name);
+            strncpy(send->body, simpio->buf, MAXLINE);
             write(to_server_fd, send, sizeof(mesg_t));
             simpio_reset(simpio);
         }
     }
     iprintf(simpio, "End of Input, Departing");
-    mesg_t departed_mesg;
+    mesg_t dept_message;
+    mesg_t* departed_mesg = &dept_message;
     departed_mesg->kind = BL_DEPARTED;
-    strcpy(departed_mesg->name, argv[1]);
+    strcpy(departed_mesg->name, server_name);
     write(to_server_fd, departed_mesg, sizeof(mesg_t));
     return NULL;
 }
 
-void *server_thread(void *vargp) {
+void *server_thread(void *param) {
+    simpio_t *simpio = (simpio_t*) param;
+    mesg_t *read_message;
     do {
-        mesg_t *read_message;
-        read(to_client_fd, read_message, sizeof(mesg_t));
-        switch(read_message->kind) {
-            case BL_MESG:
-                iprintf(simpio, "[%d] : %d", read_message->name, read_message->body);
-            case BL_JOINED:
-                iprintf(simpio, "-- %d JOINED --", read_message->name);
-            case BL_DEPARTED:
-                iprintf(simpio, "-- %d DEPARTED --", read_message->name);
-            case BL_SHUTDOWN:
-                iprintf(simpio, "!!! server is shutting down !!!");
+        read(to_client_fd, &read_message, sizeof(mesg_t));
+        if(read_message->kind == BL_MESG) {
+            iprintf(simpio, "[%d] : %d", read_message->name, read_message->body);
+        } else if(read_message->kind == BL_JOINED) {
+            iprintf(simpio, "-- %d JOINED --", read_message->name);
+        } else if(read_message->kind == BL_DEPARTED) {
+            iprintf(simpio, "-- %d DEPARTED --", read_message->name);
+        } else if(read_message->kind == BL_SHUTDOWN) {
+            iprintf(simpio, "!!! server is shutting down !!!");
         }
-    } while(read_message->kind != BL_SHUTDOWN)
+    } while(read_message->kind != BL_SHUTDOWN);
     return NULL;
 }
 
 int main(int argc, char *argv[]) {
     if(argc != 3) {
-        std::cout << "Improper usage: 2 arguments required" << endl;
-        std::cout << "Proper usage:" << endl;
-        std::cout << "bl_client [server] [user name]" << endl;
+        printf("Improper usage: 2 arguments required\n");
+        printf("Proper usage:\n");
+        printf("bl_client [server] [user name]\n");
         exit(0);
     }
+
+    strcpy(client_name, argv[2]);
+    strcpy(server_name, argv[1]);
     
     int pid = getpid();
     char to_client_fname[MAXPATH];
@@ -59,30 +70,31 @@ int main(int argc, char *argv[]) {
     mkfifo(to_client_fname, 0666);
     mkfifo(to_server_fname, 0666);
 
-    int to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
-    int to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
+    to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
+    to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
 
     char server_name_2[MAXPATH];
     strcpy(server_name_2, argv[1]);
     strcat(server_name_2, ".fifo");
     int join_fd = open(server_name_2, O_RDONLY | O_NONBLOCK);
 
-    join_t join;
+    join_t join_msg;
+    join_t* join = &join_msg;
     strncpy(join->name, argv[2], MAXPATH);
     strncpy(join->to_client_fname, to_client_fname, MAXPATH);
     strncpy(join->to_server_fname, to_server_fname, MAXPATH);
 
     write(join_fd, join, sizeof(join_t));
 
-    simpio_noncanonical_terminal_mode()
+    simpio_noncanonical_terminal_mode();
     simpio_t *simpio;
     simpio_set_prompt(simpio, PROMPT);
 
     pthread_t client_thread_id;
     pthread_t server_thread_id;
 
-    pthread_create(&client_thread_id, NULL, client_thread, NULL);
-    pthread_create(&server_thread_id, NULL, server_thread, NULL);
+    pthread_create(&client_thread_id, NULL, client_thread, (void*)&simpio);
+    pthread_create(&server_thread_id, NULL, server_thread, (void*)&simpio);
 
     pthread_join(client_thread_id, NULL);
     pthread_join(server_thread_id, NULL);
