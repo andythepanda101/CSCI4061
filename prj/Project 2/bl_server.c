@@ -31,6 +31,7 @@ int main(int argc, char* argv[]){
 
   // signal handler stuff to shut down server if signal are received
   struct sigaction my_sa = {}; // new signal handler
+  sigemptyset(&my_sa.sa_mask);
   my_sa.sa_flags = SA_RESTART;
   my_sa.sa_handler = SIG_handle;
 
@@ -43,10 +44,10 @@ int main(int argc, char* argv[]){
   while(1){
     // check the sources to see if anything new has occured
     server_check_sources(&newserver);
-    printf("testyyyyy");
+    //printf("test"); debug
     // if there is a new client available to join
     if(server_join_ready(&newserver)){
-      // add new client to server (means client joined)
+      // handle the join request by adding new client to server (means client joined)
       server_handle_join(&newserver);
     }
 
