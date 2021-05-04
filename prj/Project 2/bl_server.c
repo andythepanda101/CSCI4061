@@ -1,5 +1,5 @@
 #include "blather.h"
-#include "util.c"
+//#include "util.c"
 #include <unistd.h> // signal handling
 
 server_t newserver;
