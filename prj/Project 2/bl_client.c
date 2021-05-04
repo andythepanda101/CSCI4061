@@ -4,9 +4,11 @@ char client_name [MAXNAME];
 char server_name [MAXPATH];
 int to_client_fd;
 int to_server_fd;
+pthread_t client_thread_id;
+pthread_t server_thread_id;
+simpio_t *simpio;
 
 void *client_thread(void *param) {
-    simpio_t *simpio = (simpio_t*) param;
     simpio_reset(simpio);
     while(simpio->end_of_input != 1) {
         simpio_get_char(simpio);
@@ -30,7 +32,6 @@ void *client_thread(void *param) {
 }
 
 void *server_thread(void *param) {
-    simpio_t *simpio = (simpio_t*) param;
     mesg_t *read_message;
     do {
         read(to_client_fd, &read_message, sizeof(mesg_t));
@@ -87,14 +88,10 @@ int main(int argc, char *argv[]) {
     write(join_fd, join, sizeof(join_t));
 
     simpio_noncanonical_terminal_mode();
-    simpio_t *simpio;
     simpio_set_prompt(simpio, PROMPT);
 
-    pthread_t client_thread_id;
-    pthread_t server_thread_id;
-
-    pthread_create(&client_thread_id, NULL, client_thread, (void*)&simpio);
-    pthread_create(&server_thread_id, NULL, server_thread, (void*)&simpio);
+    pthread_create(&client_thread_id, NULL, client_thread, NULL);
+    pthread_create(&server_thread_id, NULL, server_thread, NULL);
 
     pthread_join(client_thread_id, NULL);
     pthread_join(server_thread_id, NULL);
