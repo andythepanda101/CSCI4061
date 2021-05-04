@@ -6,7 +6,8 @@ int to_client_fd;
 int to_server_fd;
 pthread_t client_thread_id;
 pthread_t server_thread_id;
-simpio_t *simpio;
+simpio_t simpio_actual;
+simpio_t *simpio = &simpio;
 
 void *client_thread(void *param) {
     simpio_reset(simpio);
@@ -28,6 +29,7 @@ void *client_thread(void *param) {
     departed_mesg->kind = BL_DEPARTED;
     strcpy(departed_mesg->name, server_name);
     write(to_server_fd, departed_mesg, sizeof(mesg_t));
+    pthread_cancel(server_thread_id)
     return NULL;
 }
 
