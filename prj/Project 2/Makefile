@@ -1,18 +1,18 @@
 ##### make file for chat thingy, project 2 #####
 
 CFLAGS = -Wall -Werror -g
-CC     = gcc $(CFLAGS) 
+CC     = gcc $(CFLAGS)
 
 
 
 ##### compilation #####
 
 ##### compile server and client #####
-bl_server: bl_server.o server_funcs.o util.o simpio.o
+bl_server: bl_server.o server_funcs.o util.o
 	$(CC) -o $@ $^
 
-bl_client: bl_client.o server_funcs.o util.o simpio.o
-	$(CC) -o $@ $^
+bl_client: bl_client.o simpio.o
+	$(CC) -o $@ $^ -lpthread
 
 ##### compile dependencies #####
 
@@ -36,10 +36,10 @@ simpio.o : simpio.c
 cleanall :
 	rm -f bl_server bl_client *.o
 
-clean bl_server :
+clean-bl_server :
 	rm -f bl_server bl_server.o
 
-clean bl_client :
+clean-bl_client :
 	rm -f bl_client bl_client.o
 
 include test_Makefile
