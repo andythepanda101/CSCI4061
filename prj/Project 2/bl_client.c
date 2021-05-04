@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
     strcpy(client_name, argv[2]);
     strcpy(server_name, argv[1]);
-    
+
     int pid = getpid();
     char to_client_fname[MAXPATH];
     sprintf(to_client_fname, "%d.client.fifo", pid);
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     mkfifo(to_client_fname, 0666);
     mkfifo(to_server_fname, 0666);
 
-    to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
+    to_client_fd = open(to_client_fname, O_RDONLY);
     to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
 
     char server_name_2[MAXPATH];
@@ -99,6 +99,6 @@ int main(int argc, char *argv[]) {
     pthread_join(server_thread_id, NULL);
 
     simpio_reset_terminal_mode();
-    
+
     return 0;
-}
+  }
