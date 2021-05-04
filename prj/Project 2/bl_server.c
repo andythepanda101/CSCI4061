@@ -5,6 +5,8 @@
 server_t newserver;
 void SIG_handle(int signum){
   server_shutdown(&newserver);
+  printf("\n");
+  exit(0);
 }
 
 int main(int argc, char* argv[]){

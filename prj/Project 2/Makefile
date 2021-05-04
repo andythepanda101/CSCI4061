@@ -34,12 +34,13 @@ simpio.o : simpio.c
 ##### clean #####
 
 cleanall :
-	rm -f bl_server bl_client *.o
+	rm -f bl_server bl_client *.o *.fifo
 
 clean-bl_server :
 	rm -f bl_server bl_server.o
 
 clean-bl_client :
 	rm -f bl_client bl_client.o
+
 
 include test_Makefile
