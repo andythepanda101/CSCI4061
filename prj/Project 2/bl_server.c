@@ -24,9 +24,9 @@ int main(int argc, char* argv[]){
   */
 
   // if a server name to be created is not specified in the args
-  if(argc < 2){
-    printf("You need to give a name for the server\nUsage: ./bl_server <insert_name_here>\n");
-    return 0;
+  if(argc != 2){
+    printf("Expected 1 argument\nUsage: ./bl_server <insert_name_here>\n");
+    exit(0);
   }
 
   // signal handler stuff to shut down server if signal are received
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
   while(1){
     // check the sources to see if anything new has occured
     server_check_sources(&newserver);
-    //printf("test"); debug
+    //printf("test");  // debug
     // if there is a new client available to join
     if(server_join_ready(&newserver)){
       // handle the join request by adding new client to server (means client joined)
