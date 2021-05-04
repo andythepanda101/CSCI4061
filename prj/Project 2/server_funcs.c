@@ -51,7 +51,8 @@ void server_shutdown(server_t *server) {
     strcpy(server_name_2, server->server_name);
     strcat(server_name_2, ".fifo");
     remove(server_name_2);
-    mesg_t* shutdown_mesg;
+    mesg_t message;
+    mesg_t* shutdown_mesg = &message;
     shutdown_mesg->kind = BL_SHUTDOWN;
     server_broadcast(server, shutdown_mesg);
     for(int i = 0; i < server->n_clients; i++) {
@@ -71,7 +72,8 @@ void server_shutdown(server_t *server) {
 // log_printf("END: server_add_client()\n");           // at end of function
 int server_add_client(server_t *server, join_t *join) {
     if(server->n_clients < MAXCLIENTS) {
-        client_t *client;
+        client_t new_client;
+        client_t *client = &new_client;
         strncpy(client->name, join->name, MAXPATH);
         strncpy(client->to_client_fname, join->to_client_fname, MAXPATH);
         strncpy(client->to_server_fname, join->to_server_fname, MAXPATH);
@@ -142,7 +144,7 @@ void server_check_sources(server_t *server) {
     ret = poll(fds, 1, 10);
     if((ret > 0) && (fds[0].revents & POLLIN)) {
         server->join_ready = 1;
-    } else if(ret = -1) {
+    } else if(ret == -1) {
         return;
     }
 
@@ -158,7 +160,7 @@ void server_check_sources(server_t *server) {
                 server->client[i].data_ready = 1;
             }
         }
-    } else if(ret = -1) {
+    } else if(ret == -1) {
         return;
     }
 }
@@ -178,11 +180,13 @@ int server_join_ready(server_t *server) {
 // log_printf("join request for new client '%s'\n",...);      // reports name of new client
 // log_printf("END: server_handle_join()\n");                 // at end of function
 void server_handle_join(server_t *server) {
-    join_t *join;
+    join_t join_msg;
+    join_t *join = &join_msg;
     read(server->join_fd, join, sizeof(join_t));
     server_add_client(server, join);
     server->join_ready = 0;
-    mesg_t *mesg;
+    mesg_t message;
+    mesg_t *mesg = &message;
     mesg->kind = BL_JOINED;
     strncpy(mesg->name, join->name, MAXPATH);
     server_broadcast(server, mesg);
@@ -211,7 +215,8 @@ int server_client_ready(server_t *server, int idx) {
 // log_printf("client %d '%s' MESSAGE '%s'\n",              // indicates client message
 // log_printf("END: server_handle_client()\n");             // at end of function
 void server_handle_client(server_t *server, int idx) {
-    mesg_t *mesg;
+    mesg_t message;
+    mesg_t *mesg = &message;
     read(server->client[idx].to_server_fd, mesg, sizeof(mesg_t));
     if(mesg->kind == 10) { // if mesg is normal message
       server_broadcast(server, mesg);
