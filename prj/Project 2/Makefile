@@ -33,7 +33,7 @@ simpio.o : simpio.c
 
 ##### clean #####
 
-cleanall :
+clean :
 	rm -f bl_server bl_client *.o *.fifo
 
 clean-bl_server :

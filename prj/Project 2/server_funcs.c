@@ -56,7 +56,7 @@ void server_shutdown(server_t *server) {
     strcpy(server_name_2, server->server_name);
     strcat(server_name_2, ".fifo");
     remove(server_name_2);
-    mesg_t message;
+    mesg_t message = {};
     mesg_t* shutdown_mesg = &message;
     shutdown_mesg->kind = BL_SHUTDOWN;
     server_broadcast(server, shutdown_mesg);
@@ -79,7 +79,7 @@ void server_shutdown(server_t *server) {
 int server_add_client(server_t *server, join_t *join) {
     log_printf("BEGIN: server_add_client()\n");
     if(server->n_clients < MAXCLIENTS) {
-        client_t new_client;
+        client_t new_client = {};
         client_t *client = &new_client;
         strncpy(client->name, join->name, MAXPATH);
         strncpy(client->to_client_fname, join->to_client_fname, MAXPATH);
@@ -107,6 +107,8 @@ int server_remove_client(server_t *server, int idx) {
     close(client->to_server_fd);
     remove(client->to_client_fname);
     remove(client->to_server_fname);
+    client_t emptyclient = {};
+    server->client[idx] = emptyclient;
     for(int i = idx; i < server->n_clients - 1; i++) {
         server->client[i] = server->client[i + 1];
     }
@@ -151,17 +153,24 @@ void server_check_sources(server_t *server) {
     struct pollfd fds[server->n_clients + 1];
     fds[0].fd = server->join_fd;
     fds[0].events = POLLIN;
-    for(int i = 1; i <= server->n_clients; i++) { // reads all to server fifos
-        fds[i].fd = server->client[i - 1].to_server_fd;
-        fds[i].events = POLLIN;
+    for(int i = 0; i < server->n_clients; i++) { // reads all to server fifos
+        fds[i+1].fd = server->client[i].to_server_fd;
+        fds[i+1].events = POLLIN;
     }
     log_printf("poll()'ing to check %d input sources\n", server->n_clients+1);
     ret = poll(fds, server->n_clients + 1, -1);
     log_printf("poll() completed with return value %d\n",ret);
-    if(ret > 0) { // reads through all output of poll() ing the fifos
+    if(ret == -1) {
+        log_printf("poll() interrupted by a signal\n");
+        log_printf("END: server_check_sources()\n");
+        return;
+    } else { // reads through all output of poll() ing the fifos
         if(fds[0].revents & POLLIN) {
             server->join_ready = 1;
             log_printf("join_ready = %d\n",1);
+        } else {
+            server->join_ready = 0;
+            log_printf("join_ready = %d\n",0);
         }
         for(int i = 1; i <= server->n_clients; i++) {
             if(fds[i].revents & POLLIN) {
@@ -172,11 +181,7 @@ void server_check_sources(server_t *server) {
               server->client[i-1].data_ready = 0;
             }
         }
-    } else if(ret == -1) {
-        log_printf("poll() interrupted by a signal\n");
-        log_printf("END: server_check_sources()\n");
-        return;
-    }
+    } 
     log_printf("END: server_check_sources()\n");
 }
 
@@ -196,13 +201,13 @@ int server_join_ready(server_t *server) {
 // log_printf("END: server_handle_join()\n");                 // at end of function
 void server_handle_join(server_t *server) {
     log_printf("BEGIN: server_handle_join()\n");
-    join_t join_msg;
+    join_t join_msg = {};
     join_t *join = &join_msg;
     read(server->join_fd, join, sizeof(join_t));
     log_printf("join request for new client '%s'\n",join->name);
     server_add_client(server, join);
     server->join_ready = 0;
-    mesg_t message;
+    mesg_t message = {};
     mesg_t *mesg = &message;
     mesg->kind = BL_JOINED;
     strncpy(mesg->name, join->name, MAXPATH);
@@ -235,7 +240,7 @@ int server_client_ready(server_t *server, int idx) {
 void server_handle_client(server_t *server, int idx) {
     server->client[idx].data_ready = 0;
     log_printf("BEGIN: server_handle_client()\n");
-    mesg_t message;
+    mesg_t message = {};
     mesg_t *mesg = &message;
     read(server->client[idx].to_server_fd, mesg, sizeof(mesg_t));
     if(mesg->kind == 10) { // if mesg is normal message
@@ -244,10 +249,9 @@ void server_handle_client(server_t *server, int idx) {
     }
     if(mesg->kind == 30){ // if mesg is client departed
       server_broadcast(server, mesg);
-      server_remove_client(server,idx);
       log_printf("client %d '%s' DEPARTED\n", idx, server->client[idx].name);
+      server_remove_client(server,idx);
     }
-
     log_printf("END: server_handle_client()\n");
 }
 

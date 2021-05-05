@@ -2,7 +2,7 @@
 //#include "util.c"
 #include <unistd.h> // signal handling
 
-server_t newserver;
+server_t newserver = {};
 int serverstarted = 0;
 void SIG_handle(int signum){
   serverstarted = 0;
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]){
   sigaction(SIGINT, &my_sa, NULL); // signal handler for SIGINT
   sigaction(SIGTERM, &my_sa, NULL); // signal handler for SIGTERM
 
-  server_start(&newserver, argv[1], O_RDONLY | O_NONBLOCK); // start server with name passed to main, and default perms
+  server_start(&newserver, argv[1], DEFAULT_PERMS); // start server with name passed to main, and default perms
   serverstarted = 1;
 
 

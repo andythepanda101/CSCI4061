@@ -6,7 +6,7 @@ int to_client_fd;
 int to_server_fd;
 pthread_t client_thread_id;
 pthread_t server_thread_id;
-simpio_t simpio_actual;
+simpio_t simpio_actual = {};
 simpio_t *simpio = &simpio_actual;
 
 void *client_thread(void *param) {
@@ -17,7 +17,7 @@ void *client_thread(void *param) {
           simpio_get_char(simpio);
         }
         if(simpio->line_ready) {
-            mesg_t message;
+            mesg_t message = {};
             mesg_t* send = &message;
             send->kind = BL_MESG;
             strcpy(send->name, client_name);
@@ -25,18 +25,18 @@ void *client_thread(void *param) {
             write(to_server_fd, send, sizeof(mesg_t));
         }
     }
-    iprintf(simpio, "End of Input, Departing\n");
+    iprintf(simpio, "End of Input, Departing\n\n");
+    pthread_cancel(server_thread_id);
     mesg_t dept_message = {};
     mesg_t* departed_mesg = &dept_message;
     departed_mesg->kind = BL_DEPARTED;
     strcpy(departed_mesg->name, client_name);
     write(to_server_fd, departed_mesg, sizeof(mesg_t));
-    pthread_cancel(server_thread_id);
     return NULL;
 }
 
 void *server_thread(void *param) {
-    mesg_t rmessage;
+    mesg_t rmessage = {};
     mesg_t *read_message = &rmessage;
     read_message->kind = 0;
     int ret_bytes;
@@ -54,6 +54,7 @@ void *server_thread(void *param) {
             }
         }
     } while(read_message->kind != BL_SHUTDOWN);
+    pthread_cancel(client_thread_id);
     return NULL;
 }
 
@@ -94,7 +95,7 @@ int main(int argc, char *argv[]) {
     int join_fd = open(server_name_2, O_WRONLY | O_NONBLOCK);
     //printf("%d\n", join_fd);
 
-    join_t join_msg;
+    join_t join_msg = {};
     join_t* join = &join_msg;
     strncpy(join->name, argv[2], MAXNAME);
     strncpy(join->to_client_fname, to_client_fname, MAXPATH);
@@ -103,7 +104,10 @@ int main(int argc, char *argv[]) {
     write(join_fd, &join_msg, sizeof(join_t));
     //printf("%d, %d\n",to_client_fd, to_server_fd);
 
-    simpio_set_prompt(simpio, PROMPT);
+    char newprompt[MAXNAME];
+    strcpy(newprompt, client_name);
+    strcat(newprompt, PROMPT);
+    simpio_set_prompt(simpio, newprompt);
     simpio_reset(simpio);
     simpio_noncanonical_terminal_mode();
 
