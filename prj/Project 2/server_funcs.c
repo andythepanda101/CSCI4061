@@ -34,7 +34,7 @@ void server_start(server_t *server, char *server_name, int perms) {
     remove(server_name_2);
     mkfifo(server_name_2, DEFAULT_PERMS);
     server->join_fd = open(server_name_2, perms);
-    printf("%s",server_name_2);
+    //printf("%s",server_name_2);
     fflush(stdout);
     log_printf("END: server_start()\n");
 }
@@ -121,7 +121,7 @@ int server_remove_client(server_t *server, int idx) {
 // should not be written to the log.
 void server_broadcast(server_t *server, mesg_t *mesg) {
     for(int i = 0; i < server->n_clients; i++) {
-      //  if(strcmp(mesg->name, server->client[i].name) != 0) { // do for only clients not sent the message
+        //if(strcmp(mesg->name, server->client[i].name) != 0) { // do for only clients not sent the message
             write(server->client[i].to_client_fd, mesg, sizeof(mesg_t));
         //}
     }
@@ -167,6 +167,9 @@ void server_check_sources(server_t *server) {
             if(fds[i].revents & POLLIN) {
                 server->client[i - 1].data_ready = 1;
                 log_printf("client %d '%s' data_ready = %d\n", i - 1, server->client[i - 1].name, 1);
+            }
+            else {
+              server->client[i-1].data_ready = 0;
             }
         }
     } else if(ret == -1) {
@@ -230,6 +233,7 @@ int server_client_ready(server_t *server, int idx) {
 // log_printf("client %d '%s' MESSAGE '%s'\n",              // indicates client message
 // log_printf("END: server_handle_client()\n");             // at end of function
 void server_handle_client(server_t *server, int idx) {
+    server->client[idx].data_ready = 0;
     log_printf("BEGIN: server_handle_client()\n");
     mesg_t message;
     mesg_t *mesg = &message;
@@ -243,6 +247,7 @@ void server_handle_client(server_t *server, int idx) {
       server_remove_client(server,idx);
       log_printf("client %d '%s' DEPARTED\n", idx, server->client[idx].name);
     }
+
     log_printf("END: server_handle_client()\n");
 }
 

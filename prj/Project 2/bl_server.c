@@ -3,14 +3,20 @@
 #include <unistd.h> // signal handling
 
 server_t newserver;
+int serverstarted = 0;
 void SIG_handle(int signum){
+  serverstarted = 0;
+  /*if(!serverstarted){
+    exit(0);
+  }
   server_shutdown(&newserver);
   printf("\n");
-  exit(0);
+  exit(0);*/
 }
 
 int main(int argc, char* argv[]){
-
+  //signal(SIGTERM, SIG_handle);
+  //signal(SIGINT, SIG_handle);
   // if a server name is not specified in the args, or too many args
   if(argc != 2){
     printf("Expected 1 argument\nUsage: ./bl_server <insert_name_here>\n");
@@ -18,18 +24,20 @@ int main(int argc, char* argv[]){
   }
 
   // signal handler stuff to shut down server if signal are received
-  struct sigaction my_sa = {}; // new signal handler
-  //sigemptyset(&my_sa.sa_mask);
-  my_sa.sa_flags = SA_RESTART;
+  struct sigaction my_sa; // new signal handler
+  my_sa.sa_flags = 0;
+  sigemptyset(&my_sa.sa_mask);
   my_sa.sa_handler = SIG_handle;
-
-  server_start(&newserver, argv[1], O_RDONLY | O_NONBLOCK); // start server with name passed to main, and default perms
 
   sigaction(SIGINT, &my_sa, NULL); // signal handler for SIGINT
   sigaction(SIGTERM, &my_sa, NULL); // signal handler for SIGTERM
 
+  server_start(&newserver, argv[1], O_RDONLY | O_NONBLOCK); // start server with name passed to main, and default perms
+  serverstarted = 1;
+
+
   // main loop to handler server stuff
-  while(1){
+  while(serverstarted){
     // check the sources to see if anything new has occured
     server_check_sources(&newserver);
     //printf("test");  // debug
@@ -55,6 +63,8 @@ int main(int argc, char* argv[]){
       }
     }
   }
-
+  server_shutdown(&newserver);
+  printf("\n");
+  //exit(0);
   return 0;
 }

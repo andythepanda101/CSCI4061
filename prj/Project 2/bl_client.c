@@ -20,17 +20,16 @@ void *client_thread(void *param) {
             mesg_t message;
             mesg_t* send = &message;
             send->kind = BL_MESG;
-            strcpy(send->name, server_name);
+            strcpy(send->name, client_name);
             strcpy(send->body, simpio->buf);
             write(to_server_fd, send, sizeof(mesg_t));
-            iprintf(simpio, "%s\n", simpio->buf);
         }
     }
-    iprintf(simpio, "End of Input, Departing");
-    mesg_t dept_message;
+    iprintf(simpio, "End of Input, Departing\n");
+    mesg_t dept_message = {};
     mesg_t* departed_mesg = &dept_message;
     departed_mesg->kind = BL_DEPARTED;
-    strcpy(departed_mesg->name, server_name);
+    strcpy(departed_mesg->name, client_name);
     write(to_server_fd, departed_mesg, sizeof(mesg_t));
     pthread_cancel(server_thread_id);
     return NULL;
@@ -44,9 +43,8 @@ void *server_thread(void *param) {
     do {
         ret_bytes = read(to_client_fd, read_message, sizeof(mesg_t));
         if(ret_bytes > 0) {
-            iprintf(simpio, "%d /%d",ret_bytes, sizeof(mesg_t));
             if(read_message->kind == BL_MESG) {
-                iprintf(simpio, "[%d] : %d\n", read_message->name, read_message->body);
+                iprintf(simpio, "[%s] : %s\n", read_message->name, read_message->body);
             } else if(read_message->kind == BL_JOINED) {
                 iprintf(simpio, "-- %s JOINED --\n", read_message->name);
             } else if(read_message->kind == BL_DEPARTED) {
@@ -69,7 +67,7 @@ int main(int argc, char *argv[]) {
 
     strcpy(client_name, argv[2]);
     strcpy(server_name, argv[1]);
-
+    //printf("%s\n",client_name);
     // generate to_client and to_server fifo name for the client
     int pid = getpid();
     char to_client_fname[MAXPATH];
@@ -86,13 +84,15 @@ int main(int argc, char *argv[]) {
     mkfifo(to_server_fname, DEFAULT_PERMS);
 
     to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
-    to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
+    to_server_fd = open(to_server_fname, O_RDWR | O_NONBLOCK);
+    //printf("%d, %d\n",to_client_fd, to_server_fd);
+    //printf("errno is: %d\n",errno);
 
     char server_name_2[MAXPATH];
     strcpy(server_name_2, argv[1]);
     strcat(server_name_2, ".fifo");
     int join_fd = open(server_name_2, O_WRONLY | O_NONBLOCK);
-    printf("%d\n", join_fd);
+    //printf("%d\n", join_fd);
 
     join_t join_msg;
     join_t* join = &join_msg;
@@ -100,9 +100,8 @@ int main(int argc, char *argv[]) {
     strncpy(join->to_client_fname, to_client_fname, MAXPATH);
     strncpy(join->to_server_fname, to_server_fname, MAXPATH);
 
-    int r = write(join_fd, &join_msg, sizeof(join_t));
-    printf("%d\n", r);
-    printf("%d\n", errno);
+    write(join_fd, &join_msg, sizeof(join_t));
+    //printf("%d, %d\n",to_client_fd, to_server_fd);
 
     simpio_set_prompt(simpio, PROMPT);
     simpio_reset(simpio);
