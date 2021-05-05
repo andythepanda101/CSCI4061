@@ -10,22 +10,8 @@ void SIG_handle(int signum){
 }
 
 int main(int argc, char* argv[]){
-  // server_t: data pertaining to server operations
-  /*
-  typedef struct {
-    char server_name[MAXPATH];    // name of server which dictates file names for joining and logging
-    int join_fd;                  // file descriptor of join file/FIFO
-    int join_ready;               // flag indicating if a join is available
-    int n_clients;                // number of clients communicating with server
-    client_t client[MAXCLIENTS];  // array of clients populated up to n_clients
 
-    int time_sec;                 // ADVANCED: time in seconds since server started
-    int log_fd;                   // ADVANCED: file descriptor for log
-    sem_t *log_sem;               // ADVANCED: posix semaphore to control who_t section of log file
-  } server_t;
-  */
-
-  // if a server name to be created is not specified in the args
+  // if a server name is not specified in the args, or too many args
   if(argc != 2){
     printf("Expected 1 argument\nUsage: ./bl_server <insert_name_here>\n");
     exit(0);
@@ -33,11 +19,11 @@ int main(int argc, char* argv[]){
 
   // signal handler stuff to shut down server if signal are received
   struct sigaction my_sa = {}; // new signal handler
-  sigemptyset(&my_sa.sa_mask);
+  //sigemptyset(&my_sa.sa_mask);
   my_sa.sa_flags = SA_RESTART;
   my_sa.sa_handler = SIG_handle;
 
-  server_start(&newserver, argv[1], DEFAULT_PERMS); // start server with name passed to main, and default perms
+  server_start(&newserver, argv[1], O_RDONLY | O_NONBLOCK); // start server with name passed to main, and default perms
 
   sigaction(SIGINT, &my_sa, NULL); // signal handler for SIGINT
   sigaction(SIGTERM, &my_sa, NULL); // signal handler for SIGTERM
