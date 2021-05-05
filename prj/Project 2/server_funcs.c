@@ -32,7 +32,7 @@ void server_start(server_t *server, char *server_name, int perms) {
     strcpy(server_name_2, server_name);
     strcat(server_name_2, ".fifo");
     remove(server_name_2);
-    mkfifo(server_name_2, 0666);
+    mkfifo(server_name_2, DEFAULT_PERMS);
     server->join_fd = open(server_name_2, perms);
     log_printf("END: server_start()\n");
 }
@@ -153,8 +153,8 @@ void server_check_sources(server_t *server) {
         fds[i].fd = server->client[i - 1].to_server_fd;
         fds[i].events = POLLIN;
     }
-    log_printf("poll()'ing to check %d input sources\n", server->n_clients);
-    ret = poll(fds, server->n_clients + 1, 500);
+    log_printf("poll()'ing to check %d input sources\n", server->n_clients+1);
+    ret = poll(fds, server->n_clients + 1, -1);
     log_printf("poll() completed with return value %d\n",ret);
     if(ret > 0) { // reads through all output of poll() ing the fifos
         if(fds[0].revents & POLLIN) {
@@ -168,6 +168,7 @@ void server_check_sources(server_t *server) {
             }
         }
     } else if(ret == -1) {
+        log_printf("poll() interrupted by a signal\n");
         log_printf("END: server_check_sources()\n");
         return;
     }

@@ -64,25 +64,29 @@ int main(int argc, char *argv[]) {
     strcpy(client_name, argv[2]);
     strcpy(server_name, argv[1]);
 
+    // generate to_client and to_server fifo name for the client
     int pid = getpid();
     char to_client_fname[MAXPATH];
     sprintf(to_client_fname, "%d.client.fifo", pid);
     char to_server_fname[MAXPATH];
     sprintf(to_server_fname, "%d.server.fifo", pid);
 
+    // remove the existing fifos with the same name
     remove(to_client_fname);
     remove(to_server_fname);
 
-    mkfifo(to_client_fname, 0666);
-    mkfifo(to_server_fname, 0666);
+    // creating new fifos for to_client and to_server
+    mkfifo(to_client_fname, DEFAULT_PERMS);
+    mkfifo(to_server_fname, DEFAULT_PERMS);
 
-    to_client_fd = open(to_client_fname, O_RDONLY);
+    to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
     to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
 
     char server_name_2[MAXPATH];
     strcpy(server_name_2, argv[1]);
     strcat(server_name_2, ".fifo");
     int join_fd = open(server_name_2, O_RDONLY | O_NONBLOCK);
+    printf("%s",server_name_2);
 
     join_t join_msg;
     join_t* join = &join_msg;
