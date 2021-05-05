@@ -35,16 +35,19 @@ void *client_thread(void *param) {
 
 void *server_thread(void *param) {
     mesg_t *read_message;
+    int ret_bytes;
     do {
-        read(to_client_fd, &read_message, sizeof(mesg_t));
-        if(read_message->kind == BL_MESG) {
-            iprintf(simpio, "[%d] : %d", read_message->name, read_message->body);
-        } else if(read_message->kind == BL_JOINED) {
-            iprintf(simpio, "-- %d JOINED --", read_message->name);
-        } else if(read_message->kind == BL_DEPARTED) {
-            iprintf(simpio, "-- %d DEPARTED --", read_message->name);
-        } else if(read_message->kind == BL_SHUTDOWN) {
-            iprintf(simpio, "!!! server is shutting down !!!");
+        ret_bytes = read(to_client_fd, &read_message, sizeof(mesg_t));
+        if(ret_bytes > 0) {
+            if(read_message->kind == BL_MESG) {
+                iprintf(simpio, "[%d] : %d", read_message->name, read_message->body);
+            } else if(read_message->kind == BL_JOINED) {
+                iprintf(simpio, "-- %d JOINED --", read_message->name);
+            } else if(read_message->kind == BL_DEPARTED) {
+                iprintf(simpio, "-- %d DEPARTED --", read_message->name);
+            } else if(read_message->kind == BL_SHUTDOWN) {
+                iprintf(simpio, "!!! server is shutting down !!!");
+            }
         }
     } while(read_message->kind != BL_SHUTDOWN);
     return NULL;
