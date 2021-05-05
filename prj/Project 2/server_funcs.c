@@ -26,6 +26,7 @@ client_t *server_get_client(server_t *server, int idx) {
 // log_printf("BEGIN: server_start()\n");              // at beginning of function
 // log_printf("END: server_start()\n");                // at end of function
 void server_start(server_t *server, char *server_name, int perms) {
+    log_printf("BEGIN: server_start()\n");
     strcpy(server->server_name, server_name);
     char server_name_2[MAXPATH];
     strcpy(server_name_2, server_name);
@@ -33,6 +34,7 @@ void server_start(server_t *server, char *server_name, int perms) {
     remove(server_name_2);
     mkfifo(server_name_2, 0666);
     server->join_fd = open(server_name_2, perms);
+    log_printf("END: server_start()\n");
 }
 
 // Shut down the server. Close the join FIFO and unlink (remove) it so
@@ -46,6 +48,7 @@ void server_start(server_t *server, char *server_name, int perms) {
 // log_printf("BEGIN: server_shutdown()\n");           // at beginning of function
 // log_printf("END: server_shutdown()\n");             // at end of function
 void server_shutdown(server_t *server) {
+    log_printf("BEGIN: server_shutdown()\n");
     close(server->join_fd);
     char server_name_2[MAXPATH];
     strcpy(server_name_2, server->server_name);
@@ -58,6 +61,7 @@ void server_shutdown(server_t *server) {
     for(int i = 0; i < server->n_clients; i++) {
         server_remove_client(server, i);
     }
+    log_printf("END: server_shutdown()\n");
 }
 
 // Adds a client to the server according to the parameter join which
@@ -71,6 +75,7 @@ void server_shutdown(server_t *server) {
 // log_printf("BEGIN: server_add_client()\n");         // at beginning of function
 // log_printf("END: server_add_client()\n");           // at end of function
 int server_add_client(server_t *server, join_t *join) {
+    log_printf("BEGIN: server_add_client()\n");
     if(server->n_clients < MAXCLIENTS) {
         client_t new_client;
         client_t *client = &new_client;
@@ -82,8 +87,10 @@ int server_add_client(server_t *server, join_t *join) {
         server->client[server->n_clients] = *client;
         server->n_clients = server->n_clients + 1;
         client->data_ready = 0;
+        log_printf("END: server_add_client()\n");
         return 0;
     }
+    log_printf("END: server_add_client()\n");
     return 1;
 }
 
@@ -137,32 +144,42 @@ void server_broadcast(server_t *server, mesg_t *mesg) {
 // log_printf("client %d '%s' data_ready = %d\n",...)         // whether client has data ready
 // log_printf("END: server_check_sources()\n");               // at end of function
 void server_check_sources(server_t *server) {
+    log_printf("BEGIN: server_check_sources()\n");
     int ret;
     struct pollfd fds[1];
     fds[0].fd = server->join_fd;
     fds[0].events = POLLIN;
+    log_printf("poll()'ing to check %d input sources\n",1);
     ret = poll(fds, 1, 10);
-    if((ret > 0) && (fds[0].revents & POLLIN)) {
+    log_printf("poll() completed with return value %d\n",ret);
+    if((ret > 0) && (fds[0].revents & POLLIN)) { // check join fifo
         server->join_ready = 1;
+        log_printf("join_ready = %d\n",1);
     } else if(ret == -1) {
+        log_printf("END: server_check_sources()\n");
         return;
     }
 
     struct pollfd fds2[server->n_clients];
-    for(int i = 0; i < server->n_clients; i++) {
+    for(int i = 0; i < server->n_clients; i++) { // reads all to server fifos
         fds2[i].fd = server->client[i].to_server_fd;
         fds2[i].events = POLLIN;
     }
+    log_printf("poll()'ing to check %d input sources\n", server->n_clients);
     ret = poll(fds2, server->n_clients, 10);
-    if(ret > 0) {
+    log_printf("poll() completed with return value %d\n",ret);
+    if(ret > 0) { // reads through all output of poll() ing the fifos
         for(int i = 0; i < server->n_clients; i++) {
             if(fds2[i].revents & POLLIN) {
                 server->client[i].data_ready = 1;
+                log_printf("client %d '%s' data_ready = %d\n", i, server->client[i].name, 1);
             }
         }
     } else if(ret == -1) {
+        log_printf("END: server_check_sources()\n");
         return;
     }
+    log_printf("END: server_check_sources()\n");
 }
 
 // Return the join_ready flag from the server which indicates whether
@@ -180,9 +197,11 @@ int server_join_ready(server_t *server) {
 // log_printf("join request for new client '%s'\n",...);      // reports name of new client
 // log_printf("END: server_handle_join()\n");                 // at end of function
 void server_handle_join(server_t *server) {
+    log_printf("BEGIN: server_handle_join()\n");
     join_t join_msg;
     join_t *join = &join_msg;
     read(server->join_fd, join, sizeof(join_t));
+    log_printf("join request for new client '%s'\n",join->name);
     server_add_client(server, join);
     server->join_ready = 0;
     mesg_t message;
@@ -190,6 +209,7 @@ void server_handle_join(server_t *server) {
     mesg->kind = BL_JOINED;
     strncpy(mesg->name, join->name, MAXPATH);
     server_broadcast(server, mesg);
+    log_printf("END: server_handle_join()\n");
 }
 
 // Return the data_ready field of the given client which indicates
@@ -215,16 +235,20 @@ int server_client_ready(server_t *server, int idx) {
 // log_printf("client %d '%s' MESSAGE '%s'\n",              // indicates client message
 // log_printf("END: server_handle_client()\n");             // at end of function
 void server_handle_client(server_t *server, int idx) {
+    log_printf("BEGIN: server_handle_client()\n");
     mesg_t message;
     mesg_t *mesg = &message;
     read(server->client[idx].to_server_fd, mesg, sizeof(mesg_t));
     if(mesg->kind == 10) { // if mesg is normal message
       server_broadcast(server, mesg);
+      log_printf("client %d '%s' MESSAGE '%s'\n", idx, server->client[idx].name, mesg->body);
     }
     if(mesg->kind == 30){ // if mesg is client departed
       server_broadcast(server, mesg);
       server_remove_client(server,idx);
+      log_printf("client %d '%s' DEPARTED\n", idx, server->client[idx].name);
     }
+    log_printf("END: server_handle_client()\n");
 }
 
 void server_tick(server_t *server);
