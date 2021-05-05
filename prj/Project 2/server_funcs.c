@@ -82,8 +82,8 @@ int server_add_client(server_t *server, join_t *join) {
         strncpy(client->name, join->name, MAXPATH);
         strncpy(client->to_client_fname, join->to_client_fname, MAXPATH);
         strncpy(client->to_server_fname, join->to_server_fname, MAXPATH);
-        client->to_client_fd = open(client->to_client_fname,O_WRONLY);
-        client->to_server_fd = open(client->to_server_fname,O_RDONLY);
+        client->to_client_fd = open(client->to_client_fname,O_WRONLY | O_NONBLOCK);
+        client->to_server_fd = open(client->to_server_fname,O_RDONLY | O_NONBLOCK);
         server->client[server->n_clients] = *client;
         server->n_clients = server->n_clients + 1;
         client->data_ready = 0;

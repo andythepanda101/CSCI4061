@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
   my_sa.sa_flags = SA_RESTART;
   my_sa.sa_handler = SIG_handle;
 
-  server_start(&newserver, argv[1], O_RDONLY | O_NONBLOCK); // start server with name passed to main, and default perms
+  server_start(&newserver, argv[1], O_RDONLY | O_WRONLY | O_NONBLOCK); // start server with name passed to main, and default perms
 
   sigaction(SIGINT, &my_sa, NULL); // signal handler for SIGINT
   sigaction(SIGTERM, &my_sa, NULL); // signal handler for SIGTERM

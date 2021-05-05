@@ -76,13 +76,14 @@ int main(int argc, char *argv[]) {
     mkfifo(to_client_fname, DEFAULT_PERMS);
     mkfifo(to_server_fname, DEFAULT_PERMS);
 
-    to_client_fd = open(to_client_fname, O_RDONLY);
-    to_server_fd = open(to_server_fname, O_WRONLY);
+    to_client_fd = open(to_client_fname, O_RDONLY | O_NONBLOCK);
+    to_server_fd = open(to_server_fname, O_WRONLY | O_NONBLOCK);
 
     char server_name_2[MAXPATH];
     strcpy(server_name_2, argv[1]);
     strcat(server_name_2, ".fifo");
     int join_fd = open(server_name_2, O_RDONLY | O_NONBLOCK);
+    printf("%s",server_name_2);
 
     join_t join_msg;
     join_t* join = &join_msg;
