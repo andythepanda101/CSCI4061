@@ -121,9 +121,9 @@ int server_remove_client(server_t *server, int idx) {
 // should not be written to the log.
 void server_broadcast(server_t *server, mesg_t *mesg) {
     for(int i = 0; i < server->n_clients; i++) {
-        if(strcmp(mesg->name, server->client[i].name) != 0) {
+      //  if(strcmp(mesg->name, server->client[i].name) != 0) { // do for only clients not sent the message
             write(server->client[i].to_client_fd, mesg, sizeof(mesg_t));
-        }
+        //}
     }
 }
 

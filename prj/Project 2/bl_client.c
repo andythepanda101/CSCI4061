@@ -10,17 +10,19 @@ simpio_t simpio_actual;
 simpio_t *simpio = &simpio_actual;
 
 void *client_thread(void *param) {
-    simpio_reset(simpio);
-    while(simpio->end_of_input != 1) {
-        simpio_get_char(simpio);
-        if(simpio->line_ready == 1) {
+    while(!simpio->end_of_input) {
+        simpio_reset(simpio);
+        iprintf(simpio,"");
+        while(!simpio->line_ready && !simpio->end_of_input) {
+          simpio_get_char(simpio);
+        }
+        if(simpio->line_ready) {
             mesg_t message;
             mesg_t* send = &message;
             send->kind = 10;
             strcpy(send->name, server_name);
             strncpy(send->body, simpio->buf, MAXLINE);
             write(to_server_fd, send, sizeof(mesg_t));
-            simpio_reset(simpio);
         }
     }
     iprintf(simpio, "End of Input, Departing");
@@ -38,16 +40,17 @@ void *server_thread(void *param) {
     mesg_t *read_message = &rmessage;
     int ret_bytes;
     do {
-        ret_bytes = read(to_client_fd, &read_message, sizeof(mesg_t));
+        ret_bytes = read(to_client_fd, read_message, sizeof(mesg_t));
         if(ret_bytes > 0) {
+            iprintf(simpio, "%d /%d",ret_bytes, sizeof(mesg_t));
             if(read_message->kind == BL_MESG) {
-                iprintf(simpio, "[%d] : %d", read_message->name, read_message->body);
+                iprintf(simpio, "[%d] : %d\n", read_message->name, read_message->body);
             } else if(read_message->kind == BL_JOINED) {
-                iprintf(simpio, "-- %d JOINED --", read_message->name);
+                iprintf(simpio, "-- %s JOINED --\n", read_message->name);
             } else if(read_message->kind == BL_DEPARTED) {
-                iprintf(simpio, "-- %d DEPARTED --", read_message->name);
+                iprintf(simpio, "-- %s DEPARTED --\n", read_message->name);
             } else if(read_message->kind == BL_SHUTDOWN) {
-                iprintf(simpio, "!!! server is shutting down !!!");
+                iprintf(simpio, "!!! server is shutting down !!!\n");
             }
         }
     } while(read_message->kind != BL_SHUTDOWN);
@@ -91,7 +94,7 @@ int main(int argc, char *argv[]) {
 
     join_t join_msg;
     join_t* join = &join_msg;
-    strncpy(join->name, argv[2], MAXPATH);
+    strncpy(join->name, argv[2], MAXNAME);
     strncpy(join->to_client_fname, to_client_fname, MAXPATH);
     strncpy(join->to_server_fname, to_server_fname, MAXPATH);
 
@@ -99,8 +102,10 @@ int main(int argc, char *argv[]) {
     printf("%d\n", r);
     printf("%d\n", errno);
 
-    simpio_noncanonical_terminal_mode();
     simpio_set_prompt(simpio, PROMPT);
+    simpio_reset(simpio);
+    simpio_noncanonical_terminal_mode();
+
 
     pthread_create(&client_thread_id, NULL, client_thread, NULL);
     pthread_create(&server_thread_id, NULL, server_thread, NULL);
