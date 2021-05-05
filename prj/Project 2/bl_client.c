@@ -1,5 +1,5 @@
 #include "blather.h"
-
+#include <errno.h>
 char client_name [MAXNAME];
 char server_name [MAXPATH];
 int to_client_fd;
@@ -34,7 +34,8 @@ void *client_thread(void *param) {
 }
 
 void *server_thread(void *param) {
-    mesg_t *read_message;
+    mesg_t rmessage;
+    mesg_t *read_message = &rmessage;
     int ret_bytes;
     do {
         ret_bytes = read(to_client_fd, &read_message, sizeof(mesg_t));
@@ -85,8 +86,8 @@ int main(int argc, char *argv[]) {
     char server_name_2[MAXPATH];
     strcpy(server_name_2, argv[1]);
     strcat(server_name_2, ".fifo");
-    int join_fd = open(server_name_2, O_RDONLY | O_NONBLOCK);
-    printf("%s",server_name_2);
+    int join_fd = open(server_name_2, O_WRONLY | O_NONBLOCK);
+    printf("%d\n", join_fd);
 
     join_t join_msg;
     join_t* join = &join_msg;
@@ -94,7 +95,9 @@ int main(int argc, char *argv[]) {
     strncpy(join->to_client_fname, to_client_fname, MAXPATH);
     strncpy(join->to_server_fname, to_server_fname, MAXPATH);
 
-    write(join_fd, join, sizeof(join_t));
+    int r = write(join_fd, &join_msg, sizeof(join_t));
+    printf("%d\n", r);
+    printf("%d\n", errno);
 
     simpio_noncanonical_terminal_mode();
     simpio_set_prompt(simpio, PROMPT);

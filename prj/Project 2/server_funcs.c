@@ -34,6 +34,8 @@ void server_start(server_t *server, char *server_name, int perms) {
     remove(server_name_2);
     mkfifo(server_name_2, DEFAULT_PERMS);
     server->join_fd = open(server_name_2, perms);
+    printf("%s",server_name_2);
+    fflush(stdout);
     log_printf("END: server_start()\n");
 }
 
