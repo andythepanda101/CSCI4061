@@ -38,6 +38,10 @@ void *client_thread(void *param) {
 void *server_thread(void *param) {
     mesg_t rmessage;
     mesg_t *read_message = &rmessage;
+<<<<<<< Updated upstream
+=======
+    read_message->kind = 0;
+>>>>>>> Stashed changes
     int ret_bytes;
     do {
         ret_bytes = read(to_client_fd, read_message, sizeof(mesg_t));
