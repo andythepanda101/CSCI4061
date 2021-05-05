@@ -146,33 +146,25 @@ void server_broadcast(server_t *server, mesg_t *mesg) {
 void server_check_sources(server_t *server) {
     log_printf("BEGIN: server_check_sources()\n");
     int ret;
-    struct pollfd fds[1];
+    struct pollfd fds[server->n_clients + 1];
     fds[0].fd = server->join_fd;
     fds[0].events = POLLIN;
-    log_printf("poll()'ing to check %d input sources\n",1);
-    ret = poll(fds, 1, 10);
-    log_printf("poll() completed with return value %d\n",ret);
-    if((ret > 0) && (fds[0].revents & POLLIN)) { // check join fifo
-        server->join_ready = 1;
-        log_printf("join_ready = %d\n",1);
-    } else if(ret == -1) {
-        log_printf("END: server_check_sources()\n");
-        return;
-    }
-
-    struct pollfd fds2[server->n_clients];
-    for(int i = 0; i < server->n_clients; i++) { // reads all to server fifos
-        fds2[i].fd = server->client[i].to_server_fd;
-        fds2[i].events = POLLIN;
+    for(int i = 1; i <= server->n_clients; i++) { // reads all to server fifos
+        fds[i].fd = server->client[i - 1].to_server_fd;
+        fds[i].events = POLLIN;
     }
     log_printf("poll()'ing to check %d input sources\n", server->n_clients);
-    ret = poll(fds2, server->n_clients, 10);
+    ret = poll(fds, server->n_clients + 1, 500);
     log_printf("poll() completed with return value %d\n",ret);
     if(ret > 0) { // reads through all output of poll() ing the fifos
-        for(int i = 0; i < server->n_clients; i++) {
-            if(fds2[i].revents & POLLIN) {
-                server->client[i].data_ready = 1;
-                log_printf("client %d '%s' data_ready = %d\n", i, server->client[i].name, 1);
+        if(fds[0].revents & POLLIN) {
+            server->join_ready = 1;
+            log_printf("join_ready = %d\n",1);
+        }
+        for(int i = 1; i <= server->n_clients; i++) {
+            if(fds[i].revents & POLLIN) {
+                server->client[i - 1].data_ready = 1;
+                log_printf("client %d '%s' data_ready = %d\n", i - 1, server->client[i - 1].name, 1);
             }
         }
     } else if(ret == -1) {
