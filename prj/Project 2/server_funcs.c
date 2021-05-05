@@ -178,7 +178,8 @@ void server_check_sources(server_t *server) {
                 log_printf("client %d '%s' data_ready = %d\n", i - 1, server->client[i - 1].name, 1);
             }
             else {
-              server->client[i-1].data_ready = 0;
+                server->client[i-1].data_ready = 0;
+                log_printf("client %d '%s' data_ready = %d\n", i - 1, server->client[i - 1].name, 0);
             }
         }
     } 
