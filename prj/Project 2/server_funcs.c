@@ -33,8 +33,8 @@ void server_start(server_t *server, char *server_name, int perms) {
     strcat(server_name_2, ".fifo");
     remove(server_name_2);
     mkfifo(server_name_2, DEFAULT_PERMS);
+    // create jion request fifo with server name
     server->join_fd = open(server_name_2, perms);
-    //printf("%s",server_name_2);
     fflush(stdout);
     log_printf("END: server_start()\n");
 }
@@ -51,16 +51,16 @@ void server_start(server_t *server, char *server_name, int perms) {
 // log_printf("END: server_shutdown()\n");             // at end of function
 void server_shutdown(server_t *server) {
     log_printf("BEGIN: server_shutdown()\n");
-    close(server->join_fd);
+    close(server->join_fd); // shut down server join request fifo
     char server_name_2[MAXPATH];
     strcpy(server_name_2, server->server_name);
     strcat(server_name_2, ".fifo");
-    remove(server_name_2);
+    remove(server_name_2); // delete the join req fifo
     mesg_t message = {};
     mesg_t* shutdown_mesg = &message;
     shutdown_mesg->kind = BL_SHUTDOWN;
-    server_broadcast(server, shutdown_mesg);
-    for(int i = 0; i < server->n_clients; i++) {
+    server_broadcast(server, shutdown_mesg); // broadcast a shutdown message to all clients on server
+    for(int i = 0; i < server->n_clients; i++) { // remove all clients from server
         server_remove_client(server, i);
     }
     log_printf("END: server_shutdown()\n");
@@ -78,14 +78,17 @@ void server_shutdown(server_t *server) {
 // log_printf("END: server_add_client()\n");           // at end of function
 int server_add_client(server_t *server, join_t *join) {
     log_printf("BEGIN: server_add_client()\n");
-    if(server->n_clients < MAXCLIENTS) {
+    if(server->n_clients < MAXCLIENTS) { // if server hasn't hit max client capacity
+        // setup client with name, it's to_server and to_client fifo names
         client_t new_client = {};
         client_t *client = &new_client;
         strncpy(client->name, join->name, MAXPATH);
         strncpy(client->to_client_fname, join->to_client_fname, MAXPATH);
         strncpy(client->to_server_fname, join->to_server_fname, MAXPATH);
+        // open the to_server and to_client fifos
         client->to_client_fd = open(client->to_client_fname,O_WRONLY | O_NONBLOCK);
         client->to_server_fd = open(client->to_server_fname,O_RDONLY | O_NONBLOCK);
+        // add client to server, data ready to 0
         server->client[server->n_clients] = *client;
         server->n_clients = server->n_clients + 1;
         client->data_ready = 0;
@@ -103,10 +106,12 @@ int server_add_client(server_t *server, join_t *join) {
 // on success, 1 on failure.
 int server_remove_client(server_t *server, int idx) {
     client_t *client = &server->client[idx];
+    //  close the to_client and to_server fifos and remove them
     close(client->to_client_fd);
     close(client->to_server_fd);
     remove(client->to_client_fname);
     remove(client->to_server_fname);
+    // remove the client from the server's client array
     client_t emptyclient = {};
     server->client[idx] = emptyclient;
     for(int i = idx; i < server->n_clients - 1; i++) {
@@ -123,9 +128,8 @@ int server_remove_client(server_t *server, int idx) {
 // should not be written to the log.
 void server_broadcast(server_t *server, mesg_t *mesg) {
     for(int i = 0; i < server->n_clients; i++) {
-        //if(strcmp(mesg->name, server->client[i].name) != 0) { // do for only clients not sent the message
-            write(server->client[i].to_client_fd, mesg, sizeof(mesg_t));
-        //}
+      // send message to all the client's to_client fifos to broadcast message
+      write(server->client[i].to_client_fd, mesg, sizeof(mesg_t));
     }
 }
 
@@ -153,36 +157,36 @@ void server_check_sources(server_t *server) {
     struct pollfd fds[server->n_clients + 1];
     fds[0].fd = server->join_fd;
     fds[0].events = POLLIN;
-    for(int i = 0; i < server->n_clients; i++) { // reads all to server fifos
+    for(int i = 0; i < server->n_clients; i++) { // reads all to_server fifos fds into array
         fds[i+1].fd = server->client[i].to_server_fd;
         fds[i+1].events = POLLIN;
     }
     log_printf("poll()'ing to check %d input sources\n", server->n_clients+1);
-    ret = poll(fds, server->n_clients + 1, -1);
+    ret = poll(fds, server->n_clients + 1, -1); // poll to
     log_printf("poll() completed with return value %d\n",ret);
-    if(ret == -1) {
+    if(ret == -1) { // poll failed
         log_printf("poll() interrupted by a signal\n");
         log_printf("END: server_check_sources()\n");
         return;
-    } else { // reads through all output of poll() ing the fifos
-        if(fds[0].revents & POLLIN) {
+    } else { // reads through all output of poll() ing the fd fifos
+        if(fds[0].revents & POLLIN) { // if first in array, the server join fifo ready, set server's join ready flag to 1
             server->join_ready = 1;
             log_printf("join_ready = %d\n",1);
         } else {
-            server->join_ready = 0;
+            server->join_ready = 0; // else set 0
             log_printf("join_ready = %d\n",0);
         }
-        for(int i = 1; i <= server->n_clients; i++) {
+        for(int i = 1; i <= server->n_clients; i++) { // for each client check data ready
             if(fds[i].revents & POLLIN) {
-                server->client[i - 1].data_ready = 1;
+                server->client[i - 1].data_ready = 1; // client data ready
                 log_printf("client %d '%s' data_ready = %d\n", i - 1, server->client[i - 1].name, 1);
             }
             else {
-                server->client[i-1].data_ready = 0;
+                server->client[i-1].data_ready = 0; // client no data ready
                 log_printf("client %d '%s' data_ready = %d\n", i - 1, server->client[i - 1].name, 0);
             }
         }
-    } 
+    }
     log_printf("END: server_check_sources()\n");
 }
 
@@ -204,15 +208,16 @@ void server_handle_join(server_t *server) {
     log_printf("BEGIN: server_handle_join()\n");
     join_t join_msg = {};
     join_t *join = &join_msg;
+    // read in join request from server join fifo
     read(server->join_fd, join, sizeof(join_t));
     log_printf("join request for new client '%s'\n",join->name);
-    server_add_client(server, join);
+    server_add_client(server, join); // add new client
     server->join_ready = 0;
     mesg_t message = {};
     mesg_t *mesg = &message;
     mesg->kind = BL_JOINED;
     strncpy(mesg->name, join->name, MAXPATH);
-    server_broadcast(server, mesg);
+    server_broadcast(server, mesg); // send message to all clients that new client has joined
     log_printf("END: server_handle_join()\n");
 }
 
